@@ -7,8 +7,8 @@
 source "${LIB_DIR}/common.sh"
 
 plugin_check() {
-  # Check if t2 kernel is installed
-  dpkg -l | grep -q "linux-t2"
+  # Check if t2 kernel is installed and running
+  uname -r | grep -q "t2"
 }
 
 plugin_install() {

@@ -7,8 +7,8 @@
 source "${LIB_DIR}/common.sh"
 
 plugin_check() {
-  # Check if wifi interface exists and firmware is installed
-  dpkg -l | grep -q "apple-firmware" && ip link show wlp1s0 &>/dev/null
+  # Check if wifi firmware is installed and interface is up
+  dpkg -s apple-firmware &>/dev/null && ip link show wlp1s0 &>/dev/null
 }
 
 plugin_install() {

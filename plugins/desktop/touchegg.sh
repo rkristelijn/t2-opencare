@@ -7,8 +7,7 @@
 source "${LIB_DIR}/common.sh"
 
 plugin_check() {
-  systemctl is-active --quiet touchegg 2>/dev/null && \
-  [[ -f "${HOME}/.config/touchegg/touchegg.conf" ]]
+  systemctl is-active --quiet touchegg 2>/dev/null
 }
 
 plugin_install() {

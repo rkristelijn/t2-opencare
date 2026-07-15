@@ -7,7 +7,7 @@
 source "${LIB_DIR}/common.sh"
 
 plugin_check() {
-  dpkg -l | grep -q "tiny-dfr"
+  dpkg -s tiny-dfr &>/dev/null
 }
 
 plugin_install() {

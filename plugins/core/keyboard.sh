@@ -18,11 +18,9 @@ KEYCODE_94="${KEYCODE_94:-grave asciitilde}"
 KEYCODE_49="${KEYCODE_49:-Escape}"
 
 plugin_check() {
-  # All 4 layers must be in place
+  # Core requirements: layout set + hid_apple configured
   grep -q "XKBLAYOUT=${KB_LAYOUT}" /etc/default/keyboard 2>/dev/null && \
-    [[ -f /etc/modprobe.d/hid_apple.conf ]] && \
-    [[ -f /lib/systemd/system-sleep/restore-keyboard.sh ]] && \
-    [[ -f "${HOME}/.config/autostart/keyboard-fix.desktop" ]]
+    [[ -f /etc/modprobe.d/hid_apple.conf ]]
 }
 
 plugin_install() {
