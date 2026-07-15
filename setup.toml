@@ -1,0 +1,47 @@
+[project]
+name = "t2-opencare"
+version = "0.1.0"
+description = "Open source care plan for T2 MacBooks running Linux"
+lang = "shell"
+license = "MIT"
+min-bash = "5.0"
+
+[hardware]
+target = "MacBookPro15,1 MacBookPro15,2 MacBookPro15,3 MacBookPro15,4 MacBookPro16,1 MacBookPro16,2 MacBookPro16,3 MacBookPro16,4"
+chip = "Apple T2"
+distro = "ubuntu-24.04 linuxmint-22"
+
+[checks]
+scripts-shell-syntax-format = true
+scripts-shell-syntax-lint = true
+meta-secrets-vulnerability-scan = true
+docs-generic-inclusive-lint = true
+code-generic-vulnerability-scan = false
+meta-pii-sensitive-scan = false
+
+[checks.scripts-shell-syntax-format]
+tool = "shfmt"
+indent = 2
+
+[checks.scripts-shell-syntax-lint]
+tool = "shellcheck"
+severity = "warning"
+
+[checks.meta-secrets-vulnerability-scan]
+tool = "gitleaks"
+
+[checks.docs-generic-inclusive-lint]
+tool = "woke"
+fallback = "grep"
+
+[checks.code-generic-vulnerability-scan]
+tool = "semgrep"
+tier = "full"
+
+[checks.meta-pii-sensitive-scan]
+tool = "grep"
+tier = "full"
+patterns = ["email", "hardcoded-path", "private-ip", "ssh-key"]
+
+[hooks]
+pre-commit = true

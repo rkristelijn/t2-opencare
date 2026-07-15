@@ -1,0 +1,54 @@
+# .woke.yml — inclusive language configuration
+# See: https://docs.getwoke.tech/configuration
+
+rules:
+  - name: blacklist
+    terms:
+      - blacklist
+    alternatives:
+      - denylist
+      - blocklist
+    note: "Exception: Linux kernel modprobe uses 'blacklist' as a literal command/filename"
+
+  - name: whitelist
+    terms:
+      - whitelist
+    alternatives:
+      - allowlist
+      - safelist
+
+  - name: master-slave
+    terms:
+      - slave
+    alternatives:
+      - replica
+      - follower
+      - worker
+
+  - name: dummy
+    terms:
+      - dummy
+    alternatives:
+      - sample
+      - placeholder
+      - stub
+
+  - name: sanity
+    terms:
+      - sanity check
+      - sanity-check
+    alternatives:
+      - quick check
+      - validation
+
+ignore_files:
+  - .git/*
+  - CONVENTIONS.md
+  - Makefile
+  - .woke.yml
+  - scripts/doctor.sh
+
+# Linux kernel commands use "blacklist" literally — exclude those patterns
+exclude_messages:
+  - "modprobe.d/blacklist"
+  - "blacklist-applespi"
