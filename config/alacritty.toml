@@ -55,11 +55,11 @@ magenta = "#f5c2e7"
 cyan = "#94e2d5"
 white = "#a6adc8"
 
-# Keybindings: make Ctrl+Shift+V and Ctrl+Shift+C work for paste/copy
-# Note: Cmd+V (physical) → keyd → Ctrl+V → Alacritty paste
-# Physical Ctrl+V stays as raw Ctrl+V for vim/tmux (verbatim insert)
-# To distinguish: we bind Ctrl+V to paste ONLY when vi_mode is off
-# Pragmatic: bind Ctrl+V=paste. Use Ctrl+Shift+V for verbatim if needed.
+# Keybindings:
+# Cmd+V (physical) → keyd → Ctrl+V → paste (works)
+# Cmd+C: can't intercept without also catching physical Ctrl+C (interrupt)
+# Solution: Ctrl+V = paste, copy = Ctrl+Shift+C (i.e. Cmd+Shift+C)
+# Physical Ctrl+C passes through to shell as interrupt (no binding)
 [[keyboard.bindings]]
 key = "V"
 mods = "Control"
@@ -67,5 +67,5 @@ action = "Paste"
 
 [[keyboard.bindings]]
 key = "C"
-mods = "Control"
+mods = "Control|Shift"
 action = "Copy"
