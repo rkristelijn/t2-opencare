@@ -261,6 +261,189 @@ check_touchegg() {
 # PERFORMANCE CHECKS
 # ═══════════════════════════════════════════════════════════════
 
+check_display() {
+  step "Display & Monitors"
+
+  if [[ -z "${DISPLAY:-}" ]]; then
+    info "  No display server — skipping"
+    return
+  fi
+
+  local monitor_count
+  monitor_count=$(xrandr --listmonitors 2>/dev/null | head -1 | awk '{print $2}')
+  ok "Monitors detected: ${monitor_count:-0}"
+
+  # List monitors
+  xrandr --listmonitors 2>/dev/null | tail -n +2 | while read -r line; do
+    local name res
+    name=$(echo "$line" | awk '{print $NF}')
+    res=$(echo "$line" | awk '{print $3}' | sed 's/+.*//' | sed 's|/[0-9]*||g')
+    info "  ${name}: ${res}"
+  done
+
+  # Monitor move keybindings — should use Ctrl+Alt+Shift+Arrow (physical ⌘+Alt+Shift+Arrow)
+  local move_left
+  move_left=$(gsettings get org.cinnamon.desktop.keybindings.wm move-to-monitor-left 2>/dev/null || echo "")
+  if echo "$move_left" | grep -q "Ctrl.*Alt"; then
+    ok "Monitor move bindings = Ctrl+Alt+Shift+Arrow"
+  else
+    fail "Monitor move bindings not set for keyd (current: ${move_left})"
+    ((ISSUES++))
+    repair "Set monitor move to Ctrl+Alt+Shift+Arrow" bash -c "
+      gsettings set org.cinnamon.desktop.keybindings.wm move-to-monitor-left \"['<Ctrl><Alt><Shift>Left']\"
+      gsettings set org.cinnamon.desktop.keybindings.wm move-to-monitor-right \"['<Ctrl><Alt><Shift>Right']\"
+      gsettings set org.cinnamon.desktop.keybindings.wm move-to-monitor-up \"['<Ctrl><Alt><Shift>Up']\"
+      gsettings set org.cinnamon.desktop.keybindings.wm move-to-monitor-down \"['<Ctrl><Alt><Shift>Down']\""
+  fi
+}
+
+check_gnome_terminal() {
+  step "Terminal (gnome-terminal)"
+
+  # Menu accelerators steal Ctrl+A, Ctrl+C etc from tmux/shell
+  local accel
+  accel=$(dconf read /org/gnome/terminal/legacy/menu-accelerator-enabled 2>/dev/null || echo "")
+  if [[ "$accel" == "false" ]]; then
+    ok "Menu accelerators disabled (Ctrl+A passes to tmux)"
+  elif [[ -z "$accel" ]]; then
+    info "  gnome-terminal not configured (using defaults)"
+  else
+    fail "Menu accelerators enabled (Ctrl+A = select-all instead of tmux prefix)"
+    ((ISSUES++))
+    repair "Disable gnome-terminal menu accelerators" bash -c "
+      dconf write /org/gnome/terminal/legacy/menu-accelerator-enabled false
+      dconf write /org/gnome/terminal/legacy/keybindings/select-all \"'disabled'\""
+  fi
+}
+
+check_bluetooth() {
+  step "Bluetooth"
+
+  # Check controller exists
+  if bluetoothctl show &>/dev/null; then
+    local bt_name
+    bt_name=$(bluetoothctl show 2>/dev/null | awk '/Name:/{print $2}')
+    ok "Bluetooth controller: ${bt_name}"
+
+    # Check powered
+    if bluetoothctl show 2>/dev/null | grep -q "Powered: yes"; then
+      ok "Bluetooth powered on"
+    else
+      warn "Bluetooth powered off"
+      repair "Power on Bluetooth" bluetoothctl power on
+    fi
+  else
+    fail "No Bluetooth controller found"
+    ((ISSUES++))
+    info "  May need apple-firmware package for BCM Bluetooth"
+  fi
+}
+
+check_battery() {
+  step "Battery"
+
+  local bat_path="/org/freedesktop/UPower/devices/battery_BAT0"
+  if ! upower -i "$bat_path" &>/dev/null; then
+    info "  No battery detected (AC only?)"
+    return
+  fi
+
+  local state pct capacity cycles
+  state=$(upower -i "$bat_path" 2>/dev/null | awk '/state:/{print $2}')
+  pct=$(upower -i "$bat_path" 2>/dev/null | awk '/percentage:/{gsub(/[^0-9.,]/,"",$2); print $2}')
+  capacity=$(upower -i "$bat_path" 2>/dev/null | awk '/capacity:/{gsub(/[^0-9.,]/,"",$2); print $2}')
+  cycles=$(upower -i "$bat_path" 2>/dev/null | awk '/charge-cycles:/{print $2}')
+
+  ok "Battery: ${pct} (${state})"
+
+  if [[ -n "$capacity" ]]; then
+    # Handle both comma and dot as decimal separator
+    local cap_int
+    cap_int=$(echo "$capacity" | sed 's/[,.].*//')
+    if [[ "${cap_int:-100}" -lt 50 ]]; then
+      warn "  Battery health: ${capacity}% — consider replacement"
+    elif [[ "${cap_int:-100}" -lt 70 ]]; then
+      warn "  Battery health: ${capacity}% (degraded, ${cycles} cycles)"
+    else
+      ok "Battery health: ${capacity}% (${cycles} cycles)"
+    fi
+  fi
+}
+
+check_docker() {
+  step "Docker"
+
+  if ! command -v docker &>/dev/null; then
+    info "  Docker not installed — skipping"
+    return
+  fi
+
+  check "Docker daemon running" bash -c 'systemctl is-active --quiet docker' || {
+    repair "Start Docker" bash -c 'sudo systemctl start docker'
+  }
+
+  check "User in docker group" bash -c 'groups | grep -q docker' || {
+    repair "Add user to docker group" sudo usermod -aG docker "$USER"
+    warn "  Logout required for group change"
+  }
+}
+
+check_nordvpn() {
+  step "NordVPN"
+
+  if ! command -v nordvpn &>/dev/null; then
+    info "  NordVPN not installed — skipping"
+    return
+  fi
+
+  check "nordvpnd service running" bash -c 'systemctl is-active --quiet nordvpnd' || {
+    repair "Start nordvpnd" bash -c 'sudo systemctl start nordvpnd'
+  }
+}
+
+check_thermal() {
+  step "Thermal & Health"
+
+  # CPU temperature
+  if command -v sensors &>/dev/null; then
+    local temp
+    temp=$(sensors 2>/dev/null | awk '/Package id 0/{gsub(/[^0-9.]/, "", $4); print int($4)}')
+    if [[ -n "$temp" ]]; then
+      if [[ "$temp" -ge 90 ]]; then
+        fail "CPU temp: ${temp}°C — CRITICAL (thermal throttling)"
+        ((ISSUES++))
+      elif [[ "$temp" -ge 80 ]]; then
+        warn "  CPU temp: ${temp}°C — hot"
+      else
+        ok "CPU temp: ${temp}°C"
+      fi
+    fi
+  fi
+
+  # NVMe health (via nvme-cli or smartctl)
+  if command -v nvme &>/dev/null; then
+    local pct_used
+    pct_used=$(sudo nvme smart-log /dev/nvme0n1 2>/dev/null | awk '/percentage_used/{print $3}' | tr -d '%')
+    if [[ -n "$pct_used" ]]; then
+      if [[ "$pct_used" -ge 90 ]]; then
+        warn "  NVMe wear: ${pct_used}% used — nearing end of life"
+      else
+        ok "NVMe health: ${pct_used}% worn"
+      fi
+    fi
+  elif command -v smartctl &>/dev/null; then
+    local smart_status
+    smart_status=$(sudo smartctl -H /dev/nvme0n1 2>/dev/null | grep -i "result\|status" | head -1)
+    if [[ -n "$smart_status" ]]; then
+      if echo "$smart_status" | grep -qi "passed\|ok"; then
+        ok "SMART: healthy"
+      else
+        warn "  SMART: ${smart_status}"
+      fi
+    fi
+  fi
+}
+
 check_performance() {
   step "Performance"
 
@@ -332,11 +515,25 @@ main() {
   echo ""
   check_keyd
   echo ""
+  check_gnome_terminal
+  echo ""
+  check_display
+  echo ""
   check_touchbar
   echo ""
   check_trackpad
   echo ""
   check_touchegg
+  echo ""
+  check_bluetooth
+  echo ""
+  check_battery
+  echo ""
+  check_docker
+  echo ""
+  check_nordvpn
+  echo ""
+  check_thermal
   echo ""
   check_performance
   echo ""
