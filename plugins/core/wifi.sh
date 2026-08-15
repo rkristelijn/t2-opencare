@@ -17,8 +17,8 @@ plugin_install() {
 
   step "Adding Apple firmware repository..."
   if ! grep -q "Apple-Firmware" /etc/apt/sources.list.d/t2.list 2>/dev/null; then
-    echo "deb [signed-by=/etc/apt/trusted.gpg.d/t2-ubuntu-repo.gpg] https://github.com/AdityaGarg8/Apple-Firmware/releases/download/debian /" \
-      | sudo tee -a /etc/apt/sources.list.d/t2.list
+    echo "deb [signed-by=/etc/apt/trusted.gpg.d/t2-ubuntu-repo.gpg] https://github.com/AdityaGarg8/Apple-Firmware/releases/download/debian /" |
+      sudo tee -a /etc/apt/sources.list.d/t2.list
   fi
 
   sudo apt-get update

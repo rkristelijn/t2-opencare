@@ -10,7 +10,7 @@ NANOBOT_DIR="/opt/nanobot"
 NANOBOT_REPO="https://github.com/rkristelijn/ROZ-nanobots-for-your-pc-.git"
 
 plugin_check() {
-  [[ -f "${NANOBOT_DIR}/nanobot.py" ]] && \
+  [[ -f "${NANOBOT_DIR}/nanobot.py" ]] &&
     systemctl is-active --quiet nanobot 2>/dev/null
 }
 

@@ -16,8 +16,8 @@ plugin_install() {
   require_internet
 
   step "Adding t2linux apt repository..."
-  curl -s --compressed "https://adityagarg8.github.io/t2-ubuntu-repo/KEY.gpg" \
-    | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/t2-ubuntu-repo.gpg >/dev/null
+  curl -s --compressed "https://adityagarg8.github.io/t2-ubuntu-repo/KEY.gpg" |
+    gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/t2-ubuntu-repo.gpg >/dev/null
 
   # Detect Ubuntu codename
   local codename
@@ -27,8 +27,8 @@ plugin_install() {
   sudo curl -s --compressed -o /etc/apt/sources.list.d/t2.list \
     "https://adityagarg8.github.io/t2-ubuntu-repo/t2.list"
 
-  echo "deb [signed-by=/etc/apt/trusted.gpg.d/t2-ubuntu-repo.gpg] https://github.com/AdityaGarg8/t2-ubuntu-repo/releases/download/${codename} /" \
-    | sudo tee -a /etc/apt/sources.list.d/t2.list
+  echo "deb [signed-by=/etc/apt/trusted.gpg.d/t2-ubuntu-repo.gpg] https://github.com/AdityaGarg8/t2-ubuntu-repo/releases/download/${codename} /" |
+    sudo tee -a /etc/apt/sources.list.d/t2.list
 
   step "Installing T2 kernel..."
   sudo apt-get update

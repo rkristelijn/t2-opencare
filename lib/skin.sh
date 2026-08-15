@@ -85,9 +85,9 @@ skin_set_theme() {
 skin_set_buttons() {
   local layout="$1" # "left" or "right"
   case "$layout" in
-  left) gsettings set org.cinnamon.desktop.wm.preferences button-layout "close,minimize,maximize:" ;;
-  right) gsettings set org.cinnamon.desktop.wm.preferences button-layout ":minimize,maximize,close" ;;
-  *) gsettings set org.cinnamon.desktop.wm.preferences button-layout "$layout" ;;
+    left) gsettings set org.cinnamon.desktop.wm.preferences button-layout "close,minimize,maximize:" ;;
+    right) gsettings set org.cinnamon.desktop.wm.preferences button-layout ":minimize,maximize,close" ;;
+    *) gsettings set org.cinnamon.desktop.wm.preferences button-layout "$layout" ;;
   esac
 }
 

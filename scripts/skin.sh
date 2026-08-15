@@ -142,11 +142,11 @@ if [[ $# -lt 1 ]]; then
 fi
 
 case "$1" in
--h | --help) usage ;;
-reset) cmd_reset ;;
-current) cmd_current ;;
-list) cmd_list ;;
-*)
-  cmd_apply "$1"
-  ;;
+  -h | --help) usage ;;
+  reset) cmd_reset ;;
+  current) cmd_current ;;
+  list) cmd_list ;;
+  *)
+    cmd_apply "$1"
+    ;;
 esac

@@ -15,7 +15,7 @@ KEYD_SERVICE="keyd"
 # ═══════════════════════════════════════════════════════════════
 
 _keyd_config() {
-  cat << 'EOF'
+  cat <<'EOF'
 # /etc/keyd/default.conf
 # macOS-identical keyboard for T2 MacBook
 # Managed by: t2-opencare (plugins/desktop/keyd.sh)
@@ -91,8 +91,8 @@ EOF
 # ═══════════════════════════════════════════════════════════════
 
 plugin_check() {
-  is_installed keyd && \
-    systemctl is-active --quiet "$KEYD_SERVICE" 2>/dev/null && \
+  is_installed keyd &&
+    systemctl is-active --quiet "$KEYD_SERVICE" 2>/dev/null &&
     grep -q "meta_mac:C" "$KEYD_CONF" 2>/dev/null
 }
 
@@ -182,16 +182,16 @@ _install_keyd() {
   local build_dir="/tmp/keyd-build"
   rm -rf "$build_dir"
   git clone --depth 1 https://github.com/rvaiya/keyd.git "$build_dir"
-  cd "$build_dir"
+  cd "$build_dir" || return 1
   make -j"$(nproc)"
   sudo make install
-  cd - >/dev/null
+  cd - >/dev/null || true
   rm -rf "$build_dir"
 
   # Create systemd service if missing
-  if [[ ! -f /etc/systemd/system/keyd.service ]] && \
-     [[ ! -f /usr/lib/systemd/system/keyd.service ]]; then
-    sudo tee /etc/systemd/system/keyd.service >/dev/null << 'UNIT'
+  if [[ ! -f /etc/systemd/system/keyd.service ]] &&
+    [[ ! -f /usr/lib/systemd/system/keyd.service ]]; then
+    sudo tee /etc/systemd/system/keyd.service >/dev/null <<'UNIT'
 [Unit]
 Description=key remapping daemon
 
@@ -269,8 +269,8 @@ _cleanup_conflicts() {
   step "Removing conflicting key remappers..."
 
   # Stop and mask xkeysnail
-  if systemctl is-active --quiet xkeysnail 2>/dev/null || \
-     systemctl is-enabled --quiet xkeysnail 2>/dev/null; then
+  if systemctl is-active --quiet xkeysnail 2>/dev/null ||
+    systemctl is-enabled --quiet xkeysnail 2>/dev/null; then
     sudo systemctl stop xkeysnail 2>/dev/null || true
     sudo systemctl mask xkeysnail 2>/dev/null || true
     ok "xkeysnail stopped and masked"
@@ -304,7 +304,7 @@ _cleanup_conflicts() {
   fi
   # Ensure IBus stays dead on next login
   mkdir -p "${HOME}/.config/autostart"
-  cat > "${HOME}/.config/autostart/ibus-daemon.desktop" << 'ENTRY'
+  cat >"${HOME}/.config/autostart/ibus-daemon.desktop" <<'ENTRY'
 [Desktop Entry]
 Type=Application
 Name=IBus Daemon

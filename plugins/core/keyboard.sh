@@ -16,7 +16,7 @@ KB_VARIANT="${KB_VARIANT:-mac}"
 KB_MODEL="${KB_MODEL:-apple_laptop}"
 
 plugin_check() {
-  grep -q "XKBLAYOUT=\"${KB_LAYOUT}\"" /etc/default/keyboard 2>/dev/null && \
+  grep -q "XKBLAYOUT=\"${KB_LAYOUT}\"" /etc/default/keyboard 2>/dev/null &&
     [[ -f /etc/modprobe.d/hid_apple.conf ]]
 }
 
@@ -25,7 +25,7 @@ plugin_install() {
 
   # ─── /etc/default/keyboard (system-wide, console + X11) ───────
   step "Writing /etc/default/keyboard..."
-  sudo tee /etc/default/keyboard > /dev/null <<EOF
+  sudo tee /etc/default/keyboard >/dev/null <<EOF
 XKBMODEL="${KB_MODEL}"
 XKBLAYOUT="${KB_LAYOUT}"
 XKBVARIANT="${KB_VARIANT}"
@@ -41,10 +41,10 @@ EOF
 
   # ─── hid_apple: fnmode=2 (media keys default, Fn for F1-F12) ──
   step "Configuring hid_apple fnmode..."
-  echo "options hid_apple fnmode=2" | sudo tee /etc/modprobe.d/hid_apple.conf > /dev/null
+  echo "options hid_apple fnmode=2" | sudo tee /etc/modprobe.d/hid_apple.conf >/dev/null
   # Apply immediately if module is loaded
   if [[ -f /sys/module/hid_apple/parameters/fnmode ]]; then
-    echo 2 | sudo tee /sys/module/hid_apple/parameters/fnmode > /dev/null
+    echo 2 | sudo tee /sys/module/hid_apple/parameters/fnmode >/dev/null
   fi
 
   # ─── Apply layout now ─────────────────────────────────────────

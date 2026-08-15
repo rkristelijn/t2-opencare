@@ -19,11 +19,11 @@ PLUGIN_DIR="${REPO_DIR}/plugins"
 CONFIG_DIR="${REPO_DIR}/config"
 
 # Logging
-info()  { echo -e "${BLUE}[info]${NC} $*"; }
-ok()    { echo -e "${GREEN}[  ok]${NC} $*"; }
-warn()  { echo -e "${YELLOW}[warn]${NC} $*"; }
-fail()  { echo -e "${RED}[FAIL]${NC} $*"; }
-step()  { echo -e "${BOLD}:: $*${NC}"; }
+info() { echo -e "${BLUE}[info]${NC} $*"; }
+ok() { echo -e "${GREEN}[  ok]${NC} $*"; }
+warn() { echo -e "${YELLOW}[warn]${NC} $*"; }
+fail() { echo -e "${RED}[FAIL]${NC} $*"; }
+step() { echo -e "${BOLD}:: $*${NC}"; }
 
 # Checks
 require_root() {
@@ -41,8 +41,8 @@ require_internet() {
 }
 
 require_t2() {
-  if ! system_profiler 2>/dev/null | grep -q "T2" && \
-     ! dmesg 2>/dev/null | grep -qi "apple-bce\|t8012"; then
+  if ! system_profiler 2>/dev/null | grep -q "T2" &&
+    ! dmesg 2>/dev/null | grep -qi "apple-bce\|t8012"; then
     # Fallback: check model identifier
     local model
     model=$(cat /sys/class/dmi/id/product_name 2>/dev/null || echo "")

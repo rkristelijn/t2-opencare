@@ -17,7 +17,7 @@ XKEYSNAIL_SERVICE="xkeysnail"
 
 plugin_check() {
   # Kinto is installed and xkeysnail is running
-  [[ -d "$KINTO_DIR" ]] && \
+  [[ -d "$KINTO_DIR" ]] &&
     systemctl is-active --quiet "$XKEYSNAIL_SERVICE" 2>/dev/null
 }
 
@@ -103,8 +103,8 @@ plugin_verify() {
 
   # Check 5: xkeysnail not crashing in logs
   local recent_errors
-  recent_errors=$(journalctl -u "$XKEYSNAIL_SERVICE" --since "5 min ago" --no-pager 2>/dev/null \
-    | grep -c "Error\|AttributeError\|Traceback" || echo "0")
+  recent_errors=$(journalctl -u "$XKEYSNAIL_SERVICE" --since "5 min ago" --no-pager 2>/dev/null |
+    grep -c "Error\|AttributeError\|Traceback" || echo "0")
   if [[ "$recent_errors" -gt 0 ]]; then
     fail "xkeysnail has errors in recent logs"
     info "  Check: journalctl -u xkeysnail -f"

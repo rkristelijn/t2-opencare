@@ -19,7 +19,7 @@ get_firefox_profile() {
 plugin_check() {
   local profile
   profile=$(get_firefox_profile)
-  [[ -n "$profile" ]] && [[ -f "${profile}/user.js" ]] && \
+  [[ -n "$profile" ]] && [[ -f "${profile}/user.js" ]] &&
     grep -q "t2-opencare" "${profile}/user.js" 2>/dev/null
 }
 
