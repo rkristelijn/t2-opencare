@@ -34,36 +34,41 @@ declare -A ASSET_REPOS=(
 # Download wallpaper for a skin (if not cached)
 extras_download_wallpaper() {
   local skin_id="$1"
-  local url="${WALLPAPER_SOURCES[$skin_id]:-}"
-
-  if [[ -z "$url" ]]; then
-    # Try local sources
-    local local_candidates=(
-      "${CONFIG_DIR}/skins/${skin_id}/wallpaper.jpg"
-      "${HOME}/git/hub/linux-intel-macbook/skins/winxp/windows_xp_original-wallpaper-2560x1600.jpg"
-    )
-    for f in "${local_candidates[@]}"; do
-      if [[ -f "$f" ]]; then
-        mkdir -p "${ASSETS_CACHE}/${skin_id}"
-        cp "$f" "${ASSETS_CACHE}/${skin_id}/wallpaper-source.jpg"
-        return 0
-      fi
-    done
-    return 1
-  fi
-
   local dest="${ASSETS_CACHE}/${skin_id}/wallpaper-source.jpg"
+
+  # Already cached
   if [[ -f "$dest" ]]; then
-    return 0 # Already cached
+    return 0
   fi
 
   mkdir -p "${ASSETS_CACHE}/${skin_id}"
-  step "Downloading wallpaper for ${skin_id}..."
-  wget -q "$url" -O "$dest" || {
-    fail "Wallpaper download failed: $url"
-    return 1
-  }
-  ok "Wallpaper cached: $(du -h "$dest" | cut -f1)"
+
+  # Try local sources first
+  local local_candidates=(
+    "${CONFIG_DIR}/skins/${skin_id}/wallpaper.jpg"
+    "${HOME}/.local/share/backgrounds/bliss.jpg"
+    "${HOME}/git/hub/linux-intel-macbook/skins/winxp/windows_xp_original-wallpaper-2560x1600.jpg"
+  )
+  for f in "${local_candidates[@]}"; do
+    if [[ -f "$f" ]]; then
+      cp "$f" "$dest"
+      return 0
+    fi
+  done
+
+  # Try URL download
+  local url="${WALLPAPER_SOURCES[$skin_id]:-}"
+  if [[ -n "$url" ]]; then
+    step "Downloading wallpaper for ${skin_id}..."
+    if wget -q "$url" -O "$dest" 2>/dev/null; then
+      ok "Wallpaper cached: $(du -h "$dest" | cut -f1)"
+      return 0
+    fi
+    rm -f "$dest"
+    warn "Wallpaper download failed — continuing without"
+  fi
+
+  return 1
 }
 
 # Generate wallpaper variants for different resolutions
@@ -287,11 +292,25 @@ with open('$menu_conf', 'w') as f:
 
 extras_remove_start_button() {
   local menu_conf="${HOME}/.config/cinnamon/spices/menu@cinnamon.org/0.json"
-  local backup
-  backup=$(ls -t "${menu_conf}.bak-"* 2>/dev/null | head -1)
+  local backup=""
+  # shellcheck disable=SC2012
+  backup=$(ls -t "${HOME}/.config/cinnamon/spices/menu@cinnamon.org"/0.json.bak-* 2>/dev/null | head -1 || true)
   if [[ -n "$backup" ]]; then
     cp "$backup" "$menu_conf"
     info "Start button restored from backup"
+  else
+    # No backup - just reset to default Mint icon
+    if [[ -f "$menu_conf" ]]; then
+      python3 -c "
+import json
+with open('$menu_conf', 'r') as f:
+    conf = json.load(f)
+conf.get('menu-icon', {})['value'] = 'linuxmint-logo-ring-symbolic'
+conf.get('menu-label', {})['value'] = ''
+with open('$menu_conf', 'w') as f:
+    json.dump(conf, f, indent=2)
+" 2>/dev/null || true
+    fi
   fi
 }
 
