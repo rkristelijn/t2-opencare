@@ -45,6 +45,7 @@ usage() {
   echo "  --desktop    Install core + desktop plugins"
   echo "  --all        Install all plugins"
   echo "  --list       List available plugins"
+  echo "  --skin NAME  Switch desktop skin live (macos, winxp, reset, list)"
   echo "  --dry-run    Show what would be installed without doing it"
   echo "  --doctor     Run hardware & config diagnostics"
   echo "  --doctor-fix Run diagnostics with auto-repair"
@@ -73,28 +74,37 @@ interactive_menu() {
   read -rp "Choose [1-4/q]: " choice
 
   case "$choice" in
-    1) run_layer "core" ;;
-    2) run_layer "core"; run_layer "desktop" ;;
-    3)
-      for layer in core desktop tools network skins; do
-        run_layer "$layer"
-      done
-      ;;
-    4)
-      echo ""
-      echo "Enter plugin names separated by spaces (e.g., core/wifi tools/tmux):"
-      read -rp "> " -a plugins
-      for p in "${plugins[@]}"; do
-        local path="${PLUGIN_DIR}/${p}.sh"
-        if [[ -f "$path" ]]; then
-          run_plugin "$path"
-        else
-          fail "Plugin not found: $p"
-        fi
-      done
-      ;;
-    q|Q) echo "Bye!"; exit 0 ;;
-    *) fail "Invalid choice"; exit 1 ;;
+  1) run_layer "core" ;;
+  2)
+    run_layer "core"
+    run_layer "desktop"
+    ;;
+  3)
+    for layer in core desktop tools network skins; do
+      run_layer "$layer"
+    done
+    ;;
+  4)
+    echo ""
+    echo "Enter plugin names separated by spaces (e.g., core/wifi tools/tmux):"
+    read -rp "> " -a plugins
+    for p in "${plugins[@]}"; do
+      local path="${PLUGIN_DIR}/${p}.sh"
+      if [[ -f "$path" ]]; then
+        run_plugin "$path"
+      else
+        fail "Plugin not found: $p"
+      fi
+    done
+    ;;
+  q | Q)
+    echo "Bye!"
+    exit 0
+    ;;
+  *)
+    fail "Invalid choice"
+    exit 1
+    ;;
   esac
 }
 
@@ -102,37 +112,48 @@ interactive_menu() {
 parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --core)
-        INTERACTIVE=false
-        SELECTED_PLUGINS+=("LAYER:core")
-        shift ;;
-      --desktop)
-        INTERACTIVE=false
-        SELECTED_PLUGINS+=("LAYER:core" "LAYER:desktop")
-        shift ;;
-      --all)
-        INTERACTIVE=false
-        SELECTED_PLUGINS+=("LAYER:core" "LAYER:desktop" "LAYER:tools" "LAYER:network" "LAYER:skins")
-        shift ;;
-      --list)
-        list_plugins
-        exit 0 ;;
-      --dry-run)
-        DRY_RUN=true
-        shift ;;
-      --doctor)
-        exec bash "${REPO_DIR}/scripts/doctor.sh" "${@:2}"
-        ;;
-      --doctor-fix)
-        exec sudo bash "${REPO_DIR}/scripts/doctor.sh" --fix
-        ;;
-      -h|--help)
-        usage
-        exit 0 ;;
-      *)
-        INTERACTIVE=false
-        SELECTED_PLUGINS+=("$1")
-        shift ;;
+    --core)
+      INTERACTIVE=false
+      SELECTED_PLUGINS+=("LAYER:core")
+      shift
+      ;;
+    --desktop)
+      INTERACTIVE=false
+      SELECTED_PLUGINS+=("LAYER:core" "LAYER:desktop")
+      shift
+      ;;
+    --all)
+      INTERACTIVE=false
+      SELECTED_PLUGINS+=("LAYER:core" "LAYER:desktop" "LAYER:tools" "LAYER:network" "LAYER:skins")
+      shift
+      ;;
+    --list)
+      list_plugins
+      exit 0
+      ;;
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --skin)
+      shift
+      exec bash "${REPO_DIR}/scripts/skin.sh" "$@"
+      ;;
+    --doctor)
+      exec bash "${REPO_DIR}/scripts/doctor.sh" "${@:2}"
+      ;;
+    --doctor-fix)
+      exec sudo bash "${REPO_DIR}/scripts/doctor.sh" --fix
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    *)
+      INTERACTIVE=false
+      SELECTED_PLUGINS+=("$1")
+      shift
+      ;;
     esac
   done
 }

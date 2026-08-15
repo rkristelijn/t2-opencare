@@ -33,7 +33,7 @@ plugin_install() {
   # ─── Write config ──────────────────────────────────────────────
   step "Writing alacritty config..."
   mkdir -p "$(dirname "$ALACRITTY_CONF")"
-  cat > "$ALACRITTY_CONF" << 'EOF'
+  cat >"$ALACRITTY_CONF" <<'EOF'
 # Alacritty — GPU-accelerated terminal
 # Managed by: t2-opencare (plugins/tools/alacritty.sh)
 
@@ -93,8 +93,19 @@ white = "#a6adc8"
 EOF
   ok "Config written to ${ALACRITTY_CONF}"
 
-  info "Launch: alacritty"
-  info "Consider setting as default terminal in Cinnamon preferences."
+  # ─── Set as default terminal ───────────────────────────────────
+  step "Setting alacritty as default terminal..."
+  # Cinnamon default terminal
+  gsettings set org.cinnamon.desktop.default-applications.terminal exec 'alacritty' 2>/dev/null || true
+  gsettings set org.cinnamon.desktop.default-applications.terminal exec-arg '-e' 2>/dev/null || true
+  # x-terminal-emulator alternative (system-wide)
+  if is_installed update-alternatives; then
+    sudo update-alternatives --set x-terminal-emulator /usr/bin/alacritty 2>/dev/null ||
+      sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator /usr/bin/alacritty 50 2>/dev/null || true
+  fi
+  ok "Alacritty set as default terminal"
+
+  info "Launch: alacritty (or Ctrl+Alt+T)"
 }
 
 plugin_verify() {

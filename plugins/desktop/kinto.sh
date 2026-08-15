@@ -1,8 +1,14 @@
 #!/bin/bash
 # plugin: desktop/kinto
-# description: macOS-style Cmd↔Ctrl key mapping (Cmd+C/V/Z/Tab works like macOS)
+# description: [DEPRECATED] macOS-style Cmd↔Ctrl key mapping — use desktop/keyd instead
 # requires: internet gui core/keyboard
 # provides: macos-keybindings
+# deprecated: true
+# replaced-by: desktop/keyd
+#
+# ⚠️  This plugin is DEPRECATED as of ADR-003.
+#     It conflicts with keyd and causes the terminal Ctrl shortcuts to break.
+#     Use `desktop/keyd` instead — see docs/adr/adr-003-keyboard-mapping-design.md
 
 source "${LIB_DIR}/common.sh"
 

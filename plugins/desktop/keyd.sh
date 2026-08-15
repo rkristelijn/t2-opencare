@@ -1,33 +1,183 @@
 #!/bin/bash
 # plugin: desktop/keyd
-# description: Kernel-level Mac-style Cmd↔Ctrl key mapping (replaces Kinto/xkeysnail)
+# description: macOS-identical keyboard (Cmd=GUI, Ctrl=terminal) via kernel-level keyd
 # requires: internet
 # provides: macos-keybindings
+# see: docs/adr/adr-003-keyboard-mapping-design.md
 
 source "${LIB_DIR}/common.sh"
 
 KEYD_CONF="/etc/keyd/default.conf"
 KEYD_SERVICE="keyd"
-KINTO_SERVICE="xkeysnail"
+
+# ═══════════════════════════════════════════════════════════════
+# KEYD CONFIG
+# ═══════════════════════════════════════════════════════════════
+
+_keyd_config() {
+  cat << 'EOF'
+# /etc/keyd/default.conf
+# macOS-identical keyboard for T2 MacBook
+# Managed by: t2-opencare (plugins/desktop/keyd.sh)
+# Design: docs/adr/adr-003-keyboard-mapping-design.md
+#
+# Principle:
+#   ⌘ Cmd  = GUI shortcuts (copy, paste, tab-switch, quit)
+#   Ctrl   = terminal control chars (Ctrl+C, Ctrl+A, tmux)
+#   Both work independently — just like a real Mac.
+
+[ids]
+*
+
+[global]
+macro_timeout = 200
+
+[main]
+
+# ─── Cmd (Meta) → "smart Ctrl" layer with Mac overrides ────────
+leftmeta = layer(meta_mac)
+rightmeta = layer(meta_mac)
+
+# ─── Ctrl stays Ctrl (terminal Ctrl+C/A/U/K/D/Z, tmux) ────────
+# (default behavior, no mapping needed)
+
+# ─── Caps Lock → Escape (tap) / Control (hold) ─────────────────
+capslock = overload(control, esc)
+
+# ─── NL Mac ISO: 102nd key (right of left shift) → grave/tilde ─
+102nd = `
+
+# ─── Section key (top-left) → Escape (§/± is useless) ──────────
+grave = esc
+
+# ═══════════════════════════════════════════════════════════════
+# meta_mac layer: Cmd behaves as Ctrl, with exceptions
+# The :C suffix makes all unmapped keys emit Ctrl+key
+# ═══════════════════════════════════════════════════════════════
+[meta_mac:C]
+
+# App switching: Cmd+Tab → Alt+Tab
+tab = A-tab
+
+# Cycle same-app windows: Cmd+` → Alt+`
+` = A-`
+
+# Launcher: Cmd+Space → Super+Space
+space = M-space
+
+# Quit app: Cmd+Q → Alt+F4
+q = A-f4
+
+# Hide/minimize: Cmd+H → Super+H
+h = M-h
+
+# ═══════════════════════════════════════════════════════════════
+# Alt (Option) layer: macOS word-level navigation
+# ═══════════════════════════════════════════════════════════════
+[alt]
+
+# Option+Backspace/Delete = delete word
+backspace = C-backspace
+delete = C-delete
+
+# Option+Left/Right = jump word
+left = C-left
+right = C-right
+EOF
+}
+
+# ═══════════════════════════════════════════════════════════════
+# PLUGIN CONTRACT
+# ═══════════════════════════════════════════════════════════════
 
 plugin_check() {
-  # keyd is installed and running
-  is_installed keyd && systemctl is-active --quiet "$KEYD_SERVICE" 2>/dev/null
+  is_installed keyd && \
+    systemctl is-active --quiet "$KEYD_SERVICE" 2>/dev/null && \
+    grep -q "meta_mac:C" "$KEYD_CONF" 2>/dev/null
 }
 
 plugin_install() {
   require_internet
 
-  # ─── Remove xkeysnail/Kinto if present ──────────────────────────
-  if systemctl is-active --quiet "$KINTO_SERVICE" 2>/dev/null; then
-    step "Removing xkeysnail/Kinto (replaced by keyd)..."
-    sudo systemctl stop "$KINTO_SERVICE" 2>/dev/null || true
-    sudo systemctl mask "$KINTO_SERVICE" 2>/dev/null || true
-    pkill -f "xkeysnail\|kintotray" 2>/dev/null || true
-    ok "xkeysnail disabled"
+  # ─── Step 1: Remove conflicting services ───────────────────────
+  _cleanup_conflicts
+
+  # ─── Step 2: Install keyd (if not present) ─────────────────────
+  if ! is_installed keyd; then
+    _install_keyd
+  else
+    ok "keyd already installed ($(keyd --version 2>&1 | head -1))"
   fi
 
-  # ─── Install keyd from source ──────────────────────────────────
+  # ─── Step 3: Write config ──────────────────────────────────────
+  _write_config
+
+  # ─── Step 4: Set Cinnamon keybindings to match ─────────────────
+  _set_cinnamon_bindings
+
+  # ─── Step 5: Set Ulauncher hotkey ──────────────────────────────
+  _set_ulauncher_hotkey
+
+  # ─── Step 6: Enable and start ──────────────────────────────────
+  step "Starting keyd service..."
+  sudo systemctl daemon-reload
+  sudo systemctl enable "$KEYD_SERVICE"
+  sudo systemctl restart "$KEYD_SERVICE"
+
+  ok "keyd installed — Mac keyboard working"
+  info "  ⌘+C/V/Z/Tab/Space = GUI shortcuts"
+  info "  Ctrl+C/A/U = terminal (unchanged)"
+  info "  Config: ${KEYD_CONF}"
+  info "  Reload after edits: sudo keyd reload"
+}
+
+plugin_verify() {
+  local errors=0
+
+  # keyd binary
+  if ! is_installed keyd; then
+    fail "keyd binary not found"
+    ((errors++))
+  fi
+
+  # Service running
+  if ! systemctl is-active --quiet "$KEYD_SERVICE" 2>/dev/null; then
+    fail "keyd service not running"
+    ((errors++))
+  fi
+
+  # Config has meta_mac layer (not dumb swap)
+  if ! grep -q "meta_mac:C" "$KEYD_CONF" 2>/dev/null; then
+    fail "keyd config missing meta_mac:C layer"
+    ((errors++))
+  fi
+
+  # No conflicting services
+  if pgrep -x xkeysnail &>/dev/null; then
+    fail "xkeysnail still running (conflicts with keyd)"
+    ((errors++))
+  fi
+  if pgrep -f kintotray &>/dev/null; then
+    fail "kintotray still running"
+    ((errors++))
+  fi
+
+  # Cinnamon window switch = Alt+Tab
+  local sw
+  sw=$(gsettings get org.cinnamon.desktop.keybindings.wm switch-windows 2>/dev/null || echo "")
+  if [[ -n "$sw" ]] && ! echo "$sw" | grep -q "Alt"; then
+    fail "Cinnamon switch-windows not set to Alt+Tab"
+    ((errors++))
+  fi
+
+  [[ $errors -eq 0 ]]
+}
+
+# ═══════════════════════════════════════════════════════════════
+# INTERNAL FUNCTIONS
+# ═══════════════════════════════════════════════════════════════
+
+_install_keyd() {
   step "Building keyd from source..."
   local build_dir="/tmp/keyd-build"
   rm -rf "$build_dir"
@@ -37,40 +187,11 @@ plugin_install() {
   sudo make install
   cd - >/dev/null
   rm -rf "$build_dir"
-  ok "keyd $(keyd --version 2>&1 | head -1) installed"
 
-  # ─── Write config ──────────────────────────────────────────────
-  step "Writing keyd config..."
-  sudo mkdir -p /etc/keyd
-  sudo tee "$KEYD_CONF" >/dev/null << 'EOF'
-# Mac-style keybindings for T2 MacBook
-# Managed by: t2-opencare (plugins/desktop/keyd.sh)
-
-[ids]
-*
-
-[main]
-
-# Core: Cmd (Meta) ↔ Ctrl swap — makes ⌘ behave as Ctrl
-leftmeta = leftcontrol
-leftcontrol = leftmeta
-rightmeta = rightcontrol
-rightcontrol = rightmeta
-
-# Caps Lock → Escape (tap) / Control (hold)
-capslock = overload(control, esc)
-
-# Alt+Backspace/Delete = delete word (macOS behavior)
-[alt]
-backspace = C-backspace
-delete = C-delete
-EOF
-  ok "Config written to ${KEYD_CONF}"
-
-  # ─── Install systemd service ───────────────────────────────────
-  step "Enabling keyd service..."
-  if [[ ! -f /etc/systemd/system/keyd.service ]] && [[ ! -f /usr/lib/systemd/system/keyd.service ]]; then
-    sudo tee /etc/systemd/system/keyd.service >/dev/null << 'EOF'
+  # Create systemd service if missing
+  if [[ ! -f /etc/systemd/system/keyd.service ]] && \
+     [[ ! -f /usr/lib/systemd/system/keyd.service ]]; then
+    sudo tee /etc/systemd/system/keyd.service >/dev/null << 'UNIT'
 [Unit]
 Description=key remapping daemon
 
@@ -80,66 +201,115 @@ ExecStart=/usr/local/bin/keyd
 
 [Install]
 WantedBy=multi-user.target
-EOF
+UNIT
   fi
-  sudo systemctl daemon-reload
-  sudo systemctl enable "$KEYD_SERVICE"
-  sudo systemctl start "$KEYD_SERVICE"
 
-  # ─── Disable IBus (unnecessary with single layout) ─────────────
-  step "Disabling IBus input method (unneeded latency)..."
-  pkill -f ibus-daemon 2>/dev/null || true
-  im-config -n none 2>/dev/null || true
+  ok "keyd $(keyd --version 2>&1 | head -1) installed"
+}
+
+_write_config() {
+  step "Writing keyd config..."
+  sudo mkdir -p /etc/keyd
+  _keyd_config | sudo tee "$KEYD_CONF" >/dev/null
+
+  # Validate config
+  if keyd check "$KEYD_CONF" 2>/dev/null; then
+    ok "Config validated"
+  else
+    warn "Config validation failed — check: sudo journalctl -eu keyd"
+  fi
+}
+
+_set_cinnamon_bindings() {
+  step "Setting Cinnamon keybindings..."
+
+  # Window switching → Alt+Tab (keyd sends Alt+Tab for Cmd+Tab)
+  gsettings set org.cinnamon.desktop.keybindings.wm switch-windows "['<Alt>Tab']" 2>/dev/null || true
+  gsettings set org.cinnamon.desktop.keybindings.wm switch-windows-backward "['<Alt><Shift>Tab']" 2>/dev/null || true
+
+  # Close window → Alt+F4 (keyd sends this for Cmd+Q)
+  gsettings set org.cinnamon.desktop.keybindings.wm close "['<Alt>F4']" 2>/dev/null || true
+
+  # Disable input-source switch (conflicts with Cmd+Space)
+  gsettings set org.cinnamon.desktop.keybindings.wm switch-input-source "[]" 2>/dev/null || true
+  gsettings set org.cinnamon.desktop.keybindings.wm switch-input-source-backward "[]" 2>/dev/null || true
+
+  # Basic tiling with arrows (Cmd+Alt+Arrow → Ctrl+Alt+Arrow)
+  gsettings set org.cinnamon.desktop.keybindings.wm push-tile-left "['<Ctrl><Alt>Left']" 2>/dev/null || true
+  gsettings set org.cinnamon.desktop.keybindings.wm push-tile-right "['<Ctrl><Alt>Right']" 2>/dev/null || true
+  gsettings set org.cinnamon.desktop.keybindings.wm push-tile-up "['<Ctrl><Alt>Up']" 2>/dev/null || true
+  gsettings set org.cinnamon.desktop.keybindings.wm push-tile-down "['<Ctrl><Alt>Down']" 2>/dev/null || true
+
+  # Disable keyboard workspace switching (use touchegg gestures instead)
+  gsettings set org.cinnamon.desktop.keybindings.wm switch-to-workspace-left "[]" 2>/dev/null || true
+  gsettings set org.cinnamon.desktop.keybindings.wm switch-to-workspace-right "[]" 2>/dev/null || true
+
+  ok "Cinnamon bindings set"
+}
+
+_set_ulauncher_hotkey() {
+  local config="${HOME}/.config/ulauncher/settings.json"
+  if [[ -f "$config" ]]; then
+    step "Setting Ulauncher hotkey to Super+Space..."
+    sed -i 's/"hotkey-show-app": ".*"/"hotkey-show-app": "<Super>space"/' "$config"
+    # Restart Ulauncher if running
+    if pgrep -x ulauncher &>/dev/null; then
+      pkill -x ulauncher 2>/dev/null || true
+      sleep 1
+      nohup ulauncher --hide-window &>/dev/null &
+      disown
+    fi
+    ok "Ulauncher hotkey = Super+Space (⌘+Space)"
+  else
+    info "Ulauncher not configured — skipping hotkey setup"
+  fi
+}
+
+_cleanup_conflicts() {
+  step "Removing conflicting key remappers..."
+
+  # Stop and mask xkeysnail
+  if systemctl is-active --quiet xkeysnail 2>/dev/null || \
+     systemctl is-enabled --quiet xkeysnail 2>/dev/null; then
+    sudo systemctl stop xkeysnail 2>/dev/null || true
+    sudo systemctl mask xkeysnail 2>/dev/null || true
+    ok "xkeysnail stopped and masked"
+  fi
+
+  # Kill kintotray
+  if pgrep -f kintotray &>/dev/null; then
+    pkill -f kintotray 2>/dev/null || true
+    ok "kintotray killed"
+  fi
+
+  # Kill xkeysnail process (if running outside systemd)
+  if pgrep -x xkeysnail &>/dev/null; then
+    sudo pkill -x xkeysnail 2>/dev/null || true
+  fi
+
+  # Remove conflicting autostart entries
+  local removed=0
+  for entry in xkeysnail.desktop kintotray.desktop keyboard-fix.desktop; do
+    if [[ -f "${HOME}/.config/autostart/${entry}" ]]; then
+      rm -f "${HOME}/.config/autostart/${entry}"
+      ((removed++))
+    fi
+  done
+  [[ $removed -gt 0 ]] && ok "Removed ${removed} conflicting autostart entries"
+
+  # Disable IBus (unneeded latency with single layout)
+  if pgrep -x ibus-daemon &>/dev/null; then
+    pkill -f ibus-daemon 2>/dev/null || true
+    im-config -n none 2>/dev/null || true
+  fi
+  # Ensure IBus stays dead on next login
   mkdir -p "${HOME}/.config/autostart"
-  cat > "${HOME}/.config/autostart/ibus-daemon.desktop" << 'EOF'
+  cat > "${HOME}/.config/autostart/ibus-daemon.desktop" << 'ENTRY'
 [Desktop Entry]
 Type=Application
 Name=IBus Daemon
 Hidden=true
-EOF
-  ok "IBus disabled"
+ENTRY
 
-  ok "keyd installed — ⌘ key now works as Ctrl (zero-latency, kernel-level)"
-  info "Config: ${KEYD_CONF}"
-  info "Reload after edits: sudo keyd reload"
-}
-
-plugin_verify() {
-  local errors=0
-
-  # Check 1: keyd binary exists
-  if ! is_installed keyd; then
-    fail "keyd binary not found"
-    ((errors++))
-  fi
-
-  # Check 2: service running
-  if ! systemctl is-active --quiet "$KEYD_SERVICE" 2>/dev/null; then
-    fail "keyd service is not running"
-    info "  Try: sudo systemctl restart keyd"
-    ((errors++))
-  fi
-
-  # Check 3: config exists and has our swap
-  if [[ ! -f "$KEYD_CONF" ]]; then
-    fail "Config missing: ${KEYD_CONF}"
-    ((errors++))
-  elif ! grep -q "leftmeta = leftcontrol" "$KEYD_CONF" 2>/dev/null; then
-    fail "Config does not contain Meta↔Ctrl swap"
-    ((errors++))
-  fi
-
-  # Check 4: xkeysnail is NOT running (replaced)
-  if pgrep -x xkeysnail &>/dev/null; then
-    warn "xkeysnail is still running (should be replaced by keyd)"
-    info "  Fix: sudo systemctl stop xkeysnail && sudo systemctl mask xkeysnail"
-  fi
-
-  # Check 5: no IBus running
-  if pgrep -x ibus-daemon &>/dev/null; then
-    warn "IBus is still running (adds input latency)"
-    info "  Fix: pkill ibus-daemon && im-config -n none"
-  fi
-
-  [[ $errors -eq 0 ]]
+  ok "Conflicts cleaned up"
 }
