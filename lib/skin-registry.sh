@@ -5,6 +5,7 @@
 
 source "${LIB_DIR}/common.sh"
 source "${LIB_DIR}/skin.sh"
+source "${LIB_DIR}/skin-extras.sh"
 
 REGISTRY_FILE="${CONFIG_DIR}/skins/registry.toml"
 SKIN_CACHE_DIR="${HOME}/.cache/t2-opencare/skins"
@@ -228,12 +229,18 @@ registry_apply() {
   mkdir -p "$(dirname "$ACTIVE_SKIN_FILE")"
   echo "$skin_id" >"$ACTIVE_SKIN_FILE"
 
+  # Apply extras (wallpaper resize, desktop icons, start button, app overrides)
+  extras_apply "$skin_id"
+
   ok "Skin '${name}' applied ✓"
   info "  Undo: ./scripts/skin.sh reset"
 }
 
 # Remove current skin and restore
 registry_remove() {
+  # Remove extras first (desktop icons, app overrides, start button)
+  extras_remove
+
   skin_restore_state
 
   # Stop plank if running
