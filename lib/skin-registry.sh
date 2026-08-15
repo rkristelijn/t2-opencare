@@ -38,6 +38,13 @@ _toml_sections() {
 # REGISTRY FUNCTIONS
 # ═══════════════════════════════════════════════════════════════
 
+# Restart Cinnamon to pick up all theme/icon changes
+_restart_cinnamon() {
+  dbus-send --session --dest=org.Cinnamon.LookingGlass --type=method_call \
+    /org/Cinnamon/LookingGlass org.Cinnamon.LookingGlass.Eval \
+    string:"global.reexec_self()" 2>/dev/null || true
+}
+
 # List all available skins from registry
 registry_list() {
   if [[ ! -f "$REGISTRY_FILE" ]]; then
@@ -232,6 +239,9 @@ registry_apply() {
   # Apply extras (wallpaper resize, desktop icons, start button, app overrides)
   extras_apply "$skin_id"
 
+  # Restart Cinnamon to fully apply theme + icons
+  _restart_cinnamon
+
   ok "Skin '${name}' applied ✓"
   info "  Undo: ./scripts/skin.sh reset"
 }
@@ -247,5 +257,9 @@ registry_remove() {
   pgrep -x plank &>/dev/null && killall plank 2>/dev/null || true
 
   rm -f "$ACTIVE_SKIN_FILE"
+
+  # Restart Cinnamon to fully restore icons
+  _restart_cinnamon
+
   ok "Skin removed — previous state restored"
 }
