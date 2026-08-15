@@ -18,15 +18,15 @@ _capture_state() {
   local output="$1"
   cat >"$output" <<EOF
 # Captured: $(date -Iseconds)
-CINNAMON_THEME=$(gsettings get org.cinnamon.theme name 2>/dev/null | tr -d "'")
-GTK_THEME=$(gsettings get org.cinnamon.desktop.interface gtk-theme 2>/dev/null | tr -d "'")
-ICON_THEME=$(gsettings get org.cinnamon.desktop.interface icon-theme 2>/dev/null | tr -d "'")
-CURSOR_THEME=$(gsettings get org.cinnamon.desktop.interface cursor-theme 2>/dev/null | tr -d "'")
-BUTTON_LAYOUT=$(gsettings get org.cinnamon.desktop.wm.preferences button-layout 2>/dev/null | tr -d "'")
-WALLPAPER=$(gsettings get org.cinnamon.desktop.background picture-uri 2>/dev/null | tr -d "'")
-WALLPAPER_MODE=$(gsettings get org.cinnamon.desktop.background picture-options 2>/dev/null | tr -d "'")
-PANELS=$(gsettings get org.cinnamon panels-enabled 2>/dev/null)
-FONT=$(gsettings get org.cinnamon.desktop.interface font-name 2>/dev/null | tr -d "'")
+CINNAMON_THEME="$(gsettings get org.cinnamon.theme name 2>/dev/null | tr -d "'")"
+GTK_THEME="$(gsettings get org.cinnamon.desktop.interface gtk-theme 2>/dev/null | tr -d "'")"
+ICON_THEME="$(gsettings get org.cinnamon.desktop.interface icon-theme 2>/dev/null | tr -d "'")"
+CURSOR_THEME="$(gsettings get org.cinnamon.desktop.interface cursor-theme 2>/dev/null | tr -d "'")"
+BUTTON_LAYOUT="$(gsettings get org.cinnamon.desktop.wm.preferences button-layout 2>/dev/null | tr -d "'")"
+WALLPAPER="$(gsettings get org.cinnamon.desktop.background picture-uri 2>/dev/null | tr -d "'")"
+WALLPAPER_MODE="$(gsettings get org.cinnamon.desktop.background picture-options 2>/dev/null | tr -d "'")"
+PANELS="$(gsettings get org.cinnamon panels-enabled 2>/dev/null)"
+FONT="$(gsettings get org.cinnamon.desktop.interface font-name 2>/dev/null | tr -d "'")"
 EOF
 }
 
