@@ -1,11 +1,14 @@
 #!/bin/bash
 # scripts/skin.sh — Live skin switcher for t2-opencare
 # Usage:
-#   ./scripts/skin.sh macos      Apply macOS skin
-#   ./scripts/skin.sh winxp      Apply Windows XP skin
-#   ./scripts/skin.sh reset      Remove current skin, restore defaults
-#   ./scripts/skin.sh current    Show current active skin
-#   ./scripts/skin.sh list       List available skins
+#   ./scripts/skin.sh macos       Apply macOS skin
+#   ./scripts/skin.sh winxp       Apply Windows XP skin
+#   ./scripts/skin.sh reset       Remove current skin, restore previous state
+#   ./scripts/skin.sh original    Restore to original state (before any skin)
+#   ./scripts/skin.sh current     Show current active skin
+#   ./scripts/skin.sh list        List available skins
+#   ./scripts/skin.sh backups     List all timestamped backups
+#   ./scripts/skin.sh restore <timestamp>  Restore specific backup
 
 set -euo pipefail
 
@@ -22,13 +25,19 @@ usage() {
   echo "Usage: $(basename "$0") <command>"
   echo ""
   echo "Commands:"
-  echo "  <skin-name>   Apply a skin (e.g., macos, winxp)"
-  echo "  reset          Remove current skin and restore defaults"
-  echo "  current        Show which skin is active"
-  echo "  list           List available skins"
+  echo "  <skin-name>          Apply a skin (e.g., macos, winxp)"
+  echo "  reset                Remove current skin → restore previous state"
+  echo "  original             Restore to original state (before any skin)"
+  echo "  current              Show which skin is active"
+  echo "  list                 List available skins"
+  echo "  backups              List all saved state backups"
+  echo "  restore <timestamp>  Restore a specific backup"
   echo ""
   echo "Available skins:"
   _list_skins
+  echo ""
+  echo "Every skin switch creates a timestamped backup."
+  echo "You can always roll back with 'restore <timestamp>' or 'original'."
 }
 
 _list_skins() {
@@ -50,7 +59,7 @@ _get_active_skin() {
 }
 
 _set_active_skin() {
-  mkdir -p "$SKIN_STATE_DIR"
+  mkdir -p "$(dirname "$ACTIVE_SKIN_FILE")"
   echo "$1" >"$ACTIVE_SKIN_FILE"
 }
 
@@ -70,7 +79,6 @@ _load_skin() {
     exit 1
   fi
 
-  # Check that this skin supports switching (has skin_apply)
   if ! grep -q '^skin_apply()' "$skin_file"; then
     fail "Skin '${name}' does not support live switching (missing skin_apply function)"
     exit 1
@@ -84,6 +92,9 @@ cmd_apply() {
   local target="$1"
   local current
   current=$(_get_active_skin)
+
+  # Save current state (timestamped backup)
+  skin_save_state
 
   # If a different skin is active, remove it first
   if [[ "$current" != "none" && "$current" != "$target" ]]; then
@@ -102,6 +113,10 @@ cmd_apply() {
 
   skin_apply
   _set_active_skin "$target"
+  echo ""
+  ok "Skin '${target}' applied. Previous state backed up."
+  info "  Undo: ./scripts/skin.sh reset"
+  info "  Full undo: ./scripts/skin.sh original"
 }
 
 cmd_reset() {
@@ -113,9 +128,28 @@ cmd_reset() {
     return
   fi
 
+  # Backup current state before removing
+  skin_save_state
+
   _load_skin "$current"
   skin_remove
   _clear_active_skin
+  ok "Skin '${current}' removed — previous state restored"
+}
+
+cmd_original() {
+  local current
+  current=$(_get_active_skin)
+
+  # If a skin is active, remove it first
+  if [[ "$current" != "none" ]]; then
+    skin_save_state
+    _load_skin "$current"
+    skin_remove
+    _clear_active_skin
+  fi
+
+  skin_restore_original
 }
 
 cmd_current() {
@@ -135,6 +169,23 @@ cmd_list() {
   cmd_current
 }
 
+cmd_backups() {
+  skin_list_backups
+}
+
+cmd_restore() {
+  local target="${1:-}"
+  if [[ -z "$target" ]]; then
+    fail "Usage: $(basename "$0") restore <timestamp>"
+    echo ""
+    skin_list_backups
+    exit 1
+  fi
+
+  skin_restore_backup "$target"
+  _clear_active_skin
+}
+
 # Main
 if [[ $# -lt 1 ]]; then
   usage
@@ -144,8 +195,14 @@ fi
 case "$1" in
   -h | --help) usage ;;
   reset) cmd_reset ;;
+  original) cmd_original ;;
   current) cmd_current ;;
   list) cmd_list ;;
+  backups) cmd_backups ;;
+  restore)
+    shift
+    cmd_restore "$@"
+    ;;
   *)
     cmd_apply "$1"
     ;;
