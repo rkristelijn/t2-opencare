@@ -56,11 +56,11 @@ grave = esc
 # ═══════════════════════════════════════════════════════════════
 [meta_mac:C]
 
-# App switching: Cmd+Tab → Alt+Tab
-tab = A-tab
+# App switching: Cmd+Tab → swap to alt_tab layer (holds Alt while tabbing)
+tab = swapm(alt_tab, A-tab)
 
-# Cycle same-app windows: Cmd+` → Alt+`
-` = A-`
+# Reverse app switch: Cmd+` → swap to alt_tab layer with Shift+Alt+Tab
+` = swapm(alt_tab, A-S-tab)
 
 # Launcher: Cmd+Space → Super+Space
 space = M-space
@@ -83,6 +83,15 @@ delete = C-delete
 # Option+Left/Right = jump word
 left = C-left
 right = C-right
+
+# ═══════════════════════════════════════════════════════════════
+# alt_tab layer: keeps Alt held while Cmd is down (for app switcher)
+# Entered via swap() from meta_mac — exited when Cmd is released
+# ═══════════════════════════════════════════════════════════════
+[alt_tab:A]
+
+tab = A-tab
+` = A-S-tab
 EOF
 }
 
