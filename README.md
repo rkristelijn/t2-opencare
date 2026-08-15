@@ -68,8 +68,8 @@ That's it. Choose "Core" on first run to get hardware working, then run again fo
 | Layer | Plugins | Description |
 |-------|---------|-------------|
 | **core** | t2-kernel, wifi, audio, keyboard, touchbar | Make hardware work |
-| **desktop** | touchegg, kinto | macOS UX on Linux (gestures, Cmd key) |
-| **tools** | tmux, neovim, docker, espanso, ollama | Developer power tools |
+| **desktop** | touchegg, keyd | macOS UX on Linux (gestures, Cmd key) |
+| **tools** | alacritty, tmux, neovim, docker, espanso, ollama | Developer power tools |
 | **network** | nordvpn, firewall | Connectivity & security |
 | **skins** | winxp | Cosmetic fun |
 
