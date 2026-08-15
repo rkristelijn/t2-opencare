@@ -20,34 +20,28 @@ export REPO_DIR LIB_DIR PLUGIN_DIR CONFIG_DIR
 
 source "${LIB_DIR}/common.sh"
 source "${LIB_DIR}/skin.sh"
+source "${LIB_DIR}/skin-registry.sh"
 
 usage() {
   echo "Usage: $(basename "$0") <command>"
   echo ""
   echo "Commands:"
-  echo "  <skin-name>          Apply a skin (e.g., macos, winxp)"
+  echo "  <skin-name>          Apply a skin (from registry or plugins)"
   echo "  reset                Remove current skin → restore previous state"
   echo "  original             Restore to original state (before any skin)"
   echo "  current              Show which skin is active"
-  echo "  list                 List available skins"
+  echo "  list                 List all available skins"
+  echo "  info <skin>          Show details about a skin"
   echo "  backups              List all saved state backups"
   echo "  restore <timestamp>  Restore a specific backup"
-  echo ""
-  echo "Available skins:"
-  _list_skins
   echo ""
   echo "Every skin switch creates a timestamped backup."
   echo "You can always roll back with 'restore <timestamp>' or 'original'."
 }
 
 _list_skins() {
-  for skin_file in "${PLUGIN_DIR}/skins"/*.sh; do
-    [[ -f "$skin_file" ]] || continue
-    local name desc
-    name=$(basename "$skin_file" .sh)
-    desc=$(grep '^# description:' "$skin_file" | head -1 | sed 's/^# description: //')
-    printf "  %-12s %s\n" "$name" "$desc"
-  done
+  # Registry skins (auto-download)
+  registry_list
 }
 
 _get_active_skin() {
@@ -93,30 +87,47 @@ cmd_apply() {
   local current
   current=$(_get_active_skin)
 
-  # Save current state (timestamped backup)
-  skin_save_state
-
   # If a different skin is active, remove it first
   if [[ "$current" != "none" && "$current" != "$target" ]]; then
     info "Removing current skin: ${current}"
-    _load_skin "$current"
-    skin_remove
+    cmd_reset_quiet
   fi
 
-  # Apply the new skin
-  _load_skin "$target"
+  # Try registry first
+  local reg_name
+  reg_name=$(_toml_get "$REGISTRY_FILE" "$target" "name")
+  if [[ -n "$reg_name" ]]; then
+    registry_apply "$target"
+    return $?
+  fi
 
-  # Ensure dependencies are installed
+  # Fall back to legacy plugin
+  _load_skin "$target"
+  skin_save_state
   if declare -f skin_deps_install &>/dev/null; then
     skin_deps_install
   fi
-
   skin_apply
   _set_active_skin "$target"
   echo ""
   ok "Skin '${target}' applied. Previous state backed up."
   info "  Undo: ./scripts/skin.sh reset"
   info "  Full undo: ./scripts/skin.sh original"
+}
+
+cmd_reset_quiet() {
+  local current
+  current=$(_get_active_skin)
+  [[ "$current" == "none" ]] && return
+
+  # Try legacy plugin
+  local skin_file="${PLUGIN_DIR}/skins/${current}.sh"
+  if [[ -f "$skin_file" ]] && grep -q '^skin_remove()' "$skin_file"; then
+    _load_skin "$current"
+    skin_remove
+  else
+    registry_remove
+  fi
 }
 
 cmd_reset() {
@@ -128,11 +139,18 @@ cmd_reset() {
     return
   fi
 
-  # Backup current state before removing
+  # Backup before removing
   skin_save_state
 
-  _load_skin "$current"
-  skin_remove
+  # Try legacy plugin first
+  local skin_file="${PLUGIN_DIR}/skins/${current}.sh"
+  if [[ -f "$skin_file" ]] && grep -q '^skin_remove()' "$skin_file"; then
+    _load_skin "$current"
+    skin_remove
+  else
+    registry_remove
+  fi
+
   _clear_active_skin
   ok "Skin '${current}' removed — previous state restored"
 }
@@ -173,6 +191,15 @@ cmd_backups() {
   skin_list_backups
 }
 
+cmd_info() {
+  local target="${1:-}"
+  if [[ -z "$target" ]]; then
+    fail "Usage: $(basename "$0") info <skin-name>"
+    exit 1
+  fi
+  registry_info "$target"
+}
+
 cmd_restore() {
   local target="${1:-}"
   if [[ -z "$target" ]]; then
@@ -198,6 +225,10 @@ case "$1" in
   original) cmd_original ;;
   current) cmd_current ;;
   list) cmd_list ;;
+  info)
+    shift
+    cmd_info "$@"
+    ;;
   backups) cmd_backups ;;
   restore)
     shift

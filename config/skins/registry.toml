@@ -1,0 +1,272 @@
+# Skin Registry — available skin packs for t2-opencare
+# Each skin defines: theme source, icons, wallpaper, layout, extras
+# Install method: git clone --depth 1 (for GitHub repos) or wget (for zips)
+
+# ═══════════════════════════════════════════════════════════════
+# WINDOWS
+# ═══════════════════════════════════════════════════════════════
+
+[winxp]
+name = "Windows XP (Luna)"
+description = "Classic Windows XP with blue Luna titlebar"
+category = "retro"
+theme_repo = "https://github.com/B00merang-Project/Windows-XP.git"
+theme_name = "Windows-XP"
+icons_repo = "https://github.com/grassmunk/Chicago95.git"
+icons_path = "Icons/Chicago95"
+icons_name = "Chicago95"
+cursor = ""
+buttons = "right"
+panel = "bottom"
+font = "Tahoma 11"
+wallpaper_url = ""
+wallpaper_local = "winxp/bliss.jpg"
+startup_sound = "winxp/windows-xp-startup.mp3"
+
+[winxp-olive]
+name = "Windows XP (Olive Green)"
+description = "Windows XP Olive Green color scheme"
+category = "retro"
+theme_repo = "https://github.com/B00merang-Project/Windows-XP.git"
+theme_branch = "Olive-Green"
+theme_name = "Windows-XP-Olive-Green"
+icons_repo = "https://github.com/grassmunk/Chicago95.git"
+icons_path = "Icons/Chicago95"
+icons_name = "Chicago95"
+buttons = "right"
+panel = "bottom"
+font = "Tahoma 11"
+
+[winxp-silver]
+name = "Windows XP (Silver)"
+description = "Windows XP Silver/Metallic color scheme"
+category = "retro"
+theme_repo = "https://github.com/B00merang-Project/Windows-XP.git"
+theme_branch = "Silver"
+theme_name = "Windows-XP-Silver"
+icons_repo = "https://github.com/grassmunk/Chicago95.git"
+icons_path = "Icons/Chicago95"
+icons_name = "Chicago95"
+buttons = "right"
+panel = "bottom"
+font = "Tahoma 11"
+
+[winxp-royale]
+name = "Windows XP (Royale)"
+description = "Windows XP Media Center Royale theme"
+category = "retro"
+theme_repo = "https://github.com/B00merang-Project/Windows-XP.git"
+theme_branch = "Royale"
+theme_name = "Windows-XP-Royale"
+icons_repo = "https://github.com/grassmunk/Chicago95.git"
+icons_path = "Icons/Chicago95"
+icons_name = "Chicago95"
+buttons = "right"
+panel = "bottom"
+font = "Tahoma 11"
+
+[win7]
+name = "Windows 7 (Aero)"
+description = "Windows 7 with Aero glass effect"
+category = "retro"
+theme_repo = "https://github.com/B00merang-Project/Windows-7.git"
+theme_name = "Windows-7"
+icons_name = "Chicago95"
+icons_repo = "https://github.com/grassmunk/Chicago95.git"
+icons_path = "Icons/Chicago95"
+buttons = "right"
+panel = "bottom"
+font = "Segoe UI 10"
+
+[win10]
+name = "Windows 10 (Light)"
+description = "Windows 10 light theme — most popular B00merang theme"
+category = "modern"
+theme_repo = "https://github.com/B00merang-Project/Windows-10.git"
+theme_name = "Windows-10"
+icons_name = "Chicago95"
+icons_repo = "https://github.com/grassmunk/Chicago95.git"
+icons_path = "Icons/Chicago95"
+buttons = "right"
+panel = "bottom"
+font = "Segoe UI 10"
+
+[win10-dark]
+name = "Windows 10 (Dark)"
+description = "Windows 10 dark mode"
+category = "modern"
+theme_repo = "https://github.com/B00merang-Project/Windows-10-Dark.git"
+theme_name = "Windows-10-Dark"
+icons_name = "Chicago95"
+icons_repo = "https://github.com/grassmunk/Chicago95.git"
+icons_path = "Icons/Chicago95"
+buttons = "right"
+panel = "bottom"
+font = "Segoe UI 10"
+
+[vista]
+name = "Windows Vista"
+description = "Windows Vista Aero theme"
+category = "retro"
+theme_repo = "https://github.com/B00merang-Project/Windows-Vista.git"
+theme_name = "Windows-Vista"
+icons_name = "Chicago95"
+icons_repo = "https://github.com/grassmunk/Chicago95.git"
+icons_path = "Icons/Chicago95"
+buttons = "right"
+panel = "bottom"
+font = "Segoe UI 10"
+
+[longhorn]
+name = "Windows Longhorn"
+description = "Unreleased Windows Longhorn beta look"
+category = "retro"
+theme_repo = "https://github.com/B00merang-Project/Windows-Longhorn.git"
+theme_name = "Windows-Longhorn"
+buttons = "right"
+panel = "bottom"
+font = "Segoe UI 10"
+
+[win95]
+name = "Windows 95/2000 Classic"
+description = "Full Windows 95 experience (theme + icons + cursors + sounds)"
+category = "retro"
+theme_repo = "https://github.com/grassmunk/Chicago95.git"
+theme_path = "Theme/Chicago95"
+theme_name = "Chicago95"
+icons_repo = "https://github.com/grassmunk/Chicago95.git"
+icons_path = "Icons/Chicago95"
+icons_name = "Chicago95"
+cursor = "Chicago95"
+buttons = "right"
+panel = "bottom"
+font = "Helvetica 10"
+
+# ═══════════════════════════════════════════════════════════════
+# macOS
+# ═══════════════════════════════════════════════════════════════
+
+[macos]
+name = "macOS (WhiteSur Dark)"
+description = "macOS Monterey/Ventura look with Plank dock"
+category = "modern"
+theme_repo = "https://github.com/vinceliuice/WhiteSur-gtk-theme.git"
+theme_installer = "install.sh -c Dark -l"
+theme_name = "WhiteSur-Dark"
+icons_repo = "https://github.com/vinceliuice/WhiteSur-icon-theme.git"
+icons_installer = "install.sh -t default"
+icons_name = "WhiteSur-dark"
+cursor = "WhiteSur-cursors"
+buttons = "left"
+panel = "top"
+font = "SF Pro Display 10"
+extras = "plank"
+
+[macos-light]
+name = "macOS (WhiteSur Light)"
+description = "macOS light mode with Plank dock"
+category = "modern"
+theme_repo = "https://github.com/vinceliuice/WhiteSur-gtk-theme.git"
+theme_installer = "install.sh -c Light -l"
+theme_name = "WhiteSur-Light"
+icons_repo = "https://github.com/vinceliuice/WhiteSur-icon-theme.git"
+icons_installer = "install.sh -t default"
+icons_name = "WhiteSur"
+cursor = "WhiteSur-cursors"
+buttons = "left"
+panel = "top"
+font = "SF Pro Display 10"
+extras = "plank"
+
+[macos-cheetah]
+name = "Mac OS X Cheetah (Aqua)"
+description = "Original 2001 Mac OS X Aqua interface"
+category = "retro"
+theme_repo = "https://github.com/B00merang-Project/Mac-OS-X-Cheetah.git"
+theme_name = "Mac-OS-X-Cheetah"
+buttons = "left"
+panel = "top"
+font = "Lucida Grande 10"
+
+[macos-catalina]
+name = "macOS Catalina (B00merang)"
+description = "macOS 10.15 Catalina recreation"
+category = "modern"
+theme_repo = "https://github.com/B00merang-Project/macOS-Catalina.git"
+theme_name = "macOS-Catalina"
+buttons = "left"
+panel = "top"
+font = "SF Pro Display 10"
+
+# ═══════════════════════════════════════════════════════════════
+# COLOR SCHEMES (modern ricing)
+# ═══════════════════════════════════════════════════════════════
+
+[catppuccin]
+name = "Catppuccin (Mocha)"
+description = "Soothing pastel dark theme — warm and cozy"
+category = "colorscheme"
+theme_repo = "https://github.com/Fausto-Korpsvart/Catppuccin-GTK-Theme.git"
+theme_path = "themes/Catppuccin-Mocha-Standard-Lavender-Dark"
+theme_name = "Catppuccin-Mocha-Standard-Lavender-Dark"
+icons_name = "Papirus-Dark"
+buttons = "right"
+panel = "bottom"
+font = "Inter 10"
+
+[dracula]
+name = "Dracula"
+description = "Dark purple theme — iconic developer aesthetic"
+category = "colorscheme"
+theme_repo = "https://github.com/dracula/gtk.git"
+theme_name = "Dracula"
+icons_name = "Papirus-Dark"
+buttons = "right"
+panel = "bottom"
+font = "Inter 10"
+
+[gruvbox]
+name = "Gruvbox (Dark)"
+description = "Warm retro terminal colors — easy on the eyes"
+category = "colorscheme"
+theme_repo = "https://github.com/Fausto-Korpsvart/Gruvbox-GTK-Theme.git"
+theme_path = "themes/Gruvbox-Dark-B"
+theme_name = "Gruvbox-Dark-B"
+icons_name = "Papirus-Dark"
+buttons = "right"
+panel = "bottom"
+font = "Inter 10"
+
+# ═══════════════════════════════════════════════════════════════
+# EXOTIC / FUN
+# ═══════════════════════════════════════════════════════════════
+
+[solaris]
+name = "Solaris 9 (CDE)"
+description = "Classic UNIX Common Desktop Environment look"
+category = "retro"
+theme_repo = "https://github.com/B00merang-Project/Solaris-9.git"
+theme_name = "Solaris-9"
+buttons = "right"
+panel = "bottom"
+font = "Monospace 10"
+
+[haiku]
+name = "Haiku (BeOS)"
+description = "BeOS/Haiku OS nostalgia"
+category = "retro"
+theme_repo = "https://github.com/B00merang-Project/Haiku.git"
+theme_name = "Haiku"
+buttons = "right"
+panel = "top"
+font = "Noto Sans 10"
+
+[unity8]
+name = "Unity 8"
+description = "Ubuntu Unity desktop look"
+category = "retro"
+theme_repo = "https://github.com/B00merang-Project/Unity-8.git"
+theme_name = "Unity-8"
+buttons = "left"
+panel = "top"
+font = "Ubuntu 10"

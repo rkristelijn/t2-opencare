@@ -129,6 +129,8 @@ inclusive:
 			| grep -v 'modprobe.d/blacklist' \
 			| grep -v 'blacklist-applespi' \
 			| grep -v 'scripts/doctor.sh' \
+			| grep -v 'heads/master' \
+			| grep -v 'Chicago95-master' \
 			|| true); \
 		if [ -n "$$hits" ]; then \
 			echo "$$hits"; \
