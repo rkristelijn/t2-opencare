@@ -256,8 +256,14 @@ with open('$menu_conf', 'w') as f:
       fi
       ;;
     win95)
-      # Chicago95 start button
-      local start_icon="${HOME}/.themes/Chicago95/misc/GTK2_start_buttons/Start-button_chicago95.png"
+      # Chicago95 start button (square Windows logo that fits panel height)
+      local panel_height
+      panel_height=$(gsettings get org.cinnamon panels-height 2>/dev/null | grep -oP '\d+' | tail -1)
+      panel_height="${panel_height:-28}"
+      local start_icon="${HOME}/.themes/Chicago95/misc/GTK2_start_buttons/windows_${panel_height}px.png"
+      # Fallback to 28px if exact size not available
+      [[ ! -f "$start_icon" ]] && start_icon="${HOME}/.themes/Chicago95/misc/GTK2_start_buttons/windows_28px.png"
+
       if [[ -f "$start_icon" ]] && [[ -f "$menu_conf" ]]; then
         cp "$menu_conf" "${menu_conf}.bak-$(date +%s)"
         python3 -c "
@@ -272,8 +278,7 @@ conf['menu-label'] = conf.get('menu-label', {})
 conf['menu-label']['value'] = 'Start'
 with open('$menu_conf', 'w') as f:
     json.dump(conf, f, indent=2)
-" 2>/dev/null && ok "Start button: Windows 95"
-        # Refresh Cinnamon panel
+" 2>/dev/null && ok "Start button: Windows logo + Start"
         dbus-send --session --dest=org.Cinnamon --type=method_call /org/Cinnamon org.Cinnamon.ReloadTheme 2>/dev/null || true
       fi
       ;;
