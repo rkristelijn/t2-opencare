@@ -86,7 +86,7 @@ check_wifi() {
   }
 
   if ip link show wlp1s0 &>/dev/null; then
-    check "WiFi connected" bash -c 'iw dev wlp1s0 link 2>/dev/null | grep -q "Connected"' || {
+    check "WiFi connected" bash -c 'nmcli -t -f TYPE,STATE dev 2>/dev/null | grep -q "wifi:connected" || iw dev wlp1s0 link 2>/dev/null | grep -q "Connected"' || {
       warn "  WiFi interface exists but not connected to a network"
     }
   fi
