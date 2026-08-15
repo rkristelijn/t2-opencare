@@ -40,36 +40,123 @@
 - **What it does**: Auto light/dark switch based on time of day
 - **Relevance**: Could integrate time-based switching later.
 
-## Retro/Nostalgia Theme Packs
+## Available Skin Sources — Complete Catalog
 
-### B00merang Windows-XP (RECOMMENDED)
-- **URL**: https://github.com/B00merang-Project/Windows-XP
-- **Quality**: Pixel-perfect Luna recreation
-- **Variants**: Luna (blue), Olive Green, Silver, Royale, Embedded, Zune
-- **Includes**: GTK 2/3, Cinnamon, Metacity, XFWM
-- **Install**: Extract zip to ~/.themes/
-- **Why better than Mint-XP**: Proper Luna gradients, correct title bar colors, authentic button styles
+### Nostalgia / Retro (B00merang Project — 77 repos, 284 followers)
 
-### CinnXP
-- **URL**: https://github.com/ndwarshuis/CinnXP
-- **Quality**: Full XP look specifically for Cinnamon
-- **Includes**: Theme + panel layout + applet configs
-- **Note**: Requires specific fonts (Tahoma, Franklin Gothic)
-- **Status**: Last updated 2019, may need fixes for Mint 22
+All themes: GTK 2/3/4, Cinnamon, GNOME Shell, Metacity, XFWM. Install by extracting to `~/.themes/`.
 
-### Chicago95
-- **URL**: https://github.com/grassmunk/Chicago95
-- **Quality**: Excellent Windows 95/2000/Classic recreation
-- **Includes**: Full GTK theme + icons + cursors + sounds + Plymouth boot + LightDM
-- **Install**: Has its own installer script
-- **Note**: Already using their icons in our winxp skin
+| Skin | Stars | Source | Notes |
+|------|-------|--------|-------|
+| **Windows XP** (Luna, Olive, Silver, Royale, Embedded, Zune) | 483 ⭐ | [B00merang-Project/Windows-XP](https://github.com/B00merang-Project/Windows-XP) | Multiple color schemes in releases |
+| **Windows 7** | 267 ⭐ | [B00merang-Project/Windows-7](https://github.com/B00merang-Project/Windows-7) | Aero glass effect |
+| **Windows 10 Light** | 881 ⭐ | [B00merang-Project/Windows-10](https://github.com/B00merang-Project/Windows-10) | Most popular B00merang theme |
+| **Windows 10 Dark** | 352 ⭐ | [B00merang-Project/Windows-10-Dark](https://github.com/B00merang-Project/Windows-10-Dark) | Dark mode variant |
+| **Windows Vista** | 66 ⭐ | [B00merang-Project/Windows-Vista](https://github.com/B00merang-Project/Windows-Vista) | Aero |
+| **Windows 8.1** | 24 ⭐ | [B00merang-Project/Windows-8.1](https://github.com/B00merang-Project/Windows-8.1) | Metro flat |
+| **Windows Longhorn** | 50 ⭐ | [B00merang-Project/Windows-Longhorn](https://github.com/B00merang-Project/Windows-Longhorn) | Pre-Vista beta builds |
+| **macOS** (generic) | 756 ⭐ | [B00merang-Project/macOS](https://github.com/B00merang-Project/macOS) | Clean Apple look |
+| **macOS Catalina** | — | [B00merang-Project/macOS-Catalina](https://github.com/B00merang-Project/macOS-Catalina) | 10.15 specific |
+| **macOS Catalina Dark** | — | [B00merang-Project/macOS-Catalina-Dark](https://github.com/B00merang-Project/macOS-Catalina-Dark) | Dark variant |
+| **Mac OS X Cheetah** | 53 ⭐ | [B00merang-Project/Mac-OS-X-Cheetah](https://github.com/B00merang-Project/Mac-OS-X-Cheetah) | Original Aqua (2001) |
+| **Solaris 9 (CDE)** | 59 ⭐ | [B00merang-Project/Solaris-9](https://github.com/B00merang-Project/Solaris-9) | Classic UNIX CDE look |
+| **Haiku (BeOS)** | 41 ⭐ | [B00merang-Project/Haiku](https://github.com/B00merang-Project/Haiku) | BeOS nostalgia |
+| **Android** | 36 ⭐ | [B00merang-Project/Android](https://github.com/B00merang-Project/Android) | Chrome OS-based |
+| **Unity 8** | 30 ⭐ | [B00merang-Project/Unity-8](https://github.com/B00merang-Project/Unity-8) | Ubuntu Unity |
 
-### WhiteSur (already in use)
-- **URL**: https://github.com/vinceliuice/WhiteSur-gtk-theme
-- **Quality**: Best macOS theme for Linux
-- **Variants**: Light, Dark, solid, all accent colors
-- **Includes**: GTK, icons, cursors, Firefox theme, GDM
-- **Note**: Active project, frequent updates
+**Install pattern (all B00merang):**
+```bash
+git clone --depth 1 https://github.com/B00merang-Project/<THEME>.git ~/.themes/<THEME>
+```
+
+### Cinnamon-specific XP themes
+
+| Skin | Source | Notes |
+|------|--------|-------|
+| **CinnXP** | [ndwarshuis/CinnXP](https://github.com/ndwarshuis/CinnXP) | Full XP for Cinnamon (theme + panel + applets) |
+| **Mint-XP** | [Cinnamon Spices](https://cinnamon-spices.linuxmint.com/themes/view/Mint-XP) | Simple XP-inspired (less accurate) |
+| **Windows 7 Cinnamon** | [Xalalau/Windows-7-Theme-Cinnamon](https://github.com/Xalalau/Windows-7-theme-cinnamon) | Updated for Cinnamon 6 |
+
+### Modern macOS themes
+
+| Skin | Stars | Source | Notes |
+|------|-------|--------|-------|
+| **WhiteSur** (GTK) | 6000+ ⭐ | [vinceliuice/WhiteSur-gtk-theme](https://github.com/vinceliuice/WhiteSur-gtk-theme) | Best macOS theme. Light/Dark, all accents |
+| **WhiteSur** (icons) | 1000+ ⭐ | [vinceliuice/WhiteSur-icon-theme](https://github.com/vinceliuice/WhiteSur-icon-theme) | Matching icon set |
+| **WhiteSur** (cursors) | — | [vinceliuice/WhiteSur-cursors](https://github.com/vinceliuice/WhiteSur-cursors) | macOS cursors |
+
+### Color scheme themes (modern, popular for ricing)
+
+| Skin | Stars | Source | Notes |
+|------|-------|--------|-------|
+| **Catppuccin GTK** | 1500+ ⭐ | [catppuccin/gtk](https://github.com/catppuccin/gtk) | Pastel, 4 flavors (Latte/Frappé/Macchiato/Mocha) |
+| **Dracula GTK** | 800+ ⭐ | [dracula/gtk](https://github.com/dracula/gtk) | Dark purple, iconic. Cinnamon support. |
+| **Gruvbox GTK** | 400+ ⭐ | [Fausto-Korpsvart/Gruvbox-GTK-Theme](https://github.com/Fausto-Korpsvart/Gruvbox-GTK-Theme) | Warm retro terminal colors |
+| **Nord GTK** | — | (via Catppuccin or custom) | Cool blue |
+| **Everforest** | 400+ ⭐ | (via GTK port) | Green forest tones |
+
+### Icon packs (pair with any theme)
+
+| Icons | Source | Style |
+|-------|--------|-------|
+| **Chicago95** | [grassmunk/Chicago95](https://github.com/grassmunk/Chicago95) | Win95/2000 (includes full GTK theme + sounds) |
+| **Papirus** | [PapirusDevelopmentTeam/papirus-icon-theme](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme) | Modern flat (most popular Linux icons) |
+| **Tela** | [vinceliuice/Tela-icon-theme](https://github.com/vinceliuice/Tela-icon-theme) | Modern flat, many colors |
+| **WhiteSur** | See above | macOS Big Sur style |
+
+## How themes work (technical)
+
+### Directory structure
+```
+~/.themes/<ThemeName>/
+├── cinnamon/          # Cinnamon shell theme (CSS)
+├── gtk-2.0/           # GTK2 theme (gtkrc)
+├── gtk-3.0/           # GTK3 theme (CSS)
+├── gtk-4.0/           # GTK4/libadwaita (CSS)
+├── metacity-1/        # Window borders (Mutter/Muffin)
+├── xfwm4/             # XFWM window borders
+└── index.theme        # Theme metadata
+
+~/.icons/<IconThemeName>/
+├── 16x16/             # Small icons
+├── 22x22/
+├── 24x24/
+├── 32x32/
+├── 48x48/
+├── 64x64/
+├── 128x128/
+├── scalable/          # SVG icons
+├── cursors/           # X11 cursor files
+└── index.theme        # Icon theme metadata
+```
+
+### How switching works (gsettings/dconf)
+```bash
+# Cinnamon shell theme (panels, menu, OSD)
+gsettings set org.cinnamon.theme name "ThemeName"
+
+# GTK theme (app windows, buttons, inputs)
+gsettings set org.cinnamon.desktop.interface gtk-theme "ThemeName"
+
+# Icon theme
+gsettings set org.cinnamon.desktop.interface icon-theme "IconThemeName"
+
+# Cursor theme
+gsettings set org.cinnamon.desktop.interface cursor-theme "CursorThemeName"
+
+# Window border theme (metacity)
+gsettings set org.cinnamon.desktop.wm.preferences theme "ThemeName"
+
+# Window buttons position
+gsettings set org.cinnamon.desktop.wm.preferences button-layout "close,minimize,maximize:"  # left
+gsettings set org.cinnamon.desktop.wm.preferences button-layout ":minimize,maximize,close"  # right
+```
+
+All changes are instant — no logout needed. Cinnamon watches these dconf keys and reloads in real-time.
+
+### Full skin = theme + icons + cursors + wallpaper + panel + font + sounds
+
+A "skin" in our system is a combination of all the above, applied atomically with rollback support.
 
 ## Gap Analysis: What our skin.sh does that others don't
 
