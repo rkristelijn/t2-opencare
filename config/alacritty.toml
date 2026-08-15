@@ -1,0 +1,71 @@
+# Alacritty configuration
+# Replaces gnome-terminal — see ADR-001
+
+[env]
+TERM = "xterm-256color"
+
+[window]
+padding = { x = 4, y = 4 }
+dynamic_padding = true
+opacity = 0.95
+
+[font]
+size = 11.0
+
+[font.normal]
+family = "JetBrainsMono Nerd Font Mono"
+style = "Regular"
+
+[font.bold]
+family = "JetBrainsMono Nerd Font Mono"
+style = "Bold"
+
+[font.italic]
+family = "JetBrainsMono Nerd Font Mono"
+style = "Italic"
+
+[scrolling]
+history = 10000
+
+[selection]
+save_to_clipboard = true
+
+# Catppuccin Mocha colors (subtle, easy on the eyes)
+[colors.primary]
+background = "#1e1e2e"
+foreground = "#cdd6f4"
+
+[colors.normal]
+black = "#45475a"
+red = "#f38ba8"
+green = "#a6e3a1"
+yellow = "#f9e2af"
+blue = "#89b4fa"
+magenta = "#f5c2e7"
+cyan = "#94e2d5"
+white = "#bac2de"
+
+[colors.bright]
+black = "#585b70"
+red = "#f38ba8"
+green = "#a6e3a1"
+yellow = "#f9e2af"
+blue = "#89b4fa"
+magenta = "#f5c2e7"
+cyan = "#94e2d5"
+white = "#a6adc8"
+
+# Keybindings: make Ctrl+Shift+V and Ctrl+Shift+C work for paste/copy
+# Note: Cmd+V (physical) → keyd → Ctrl+V → Alacritty paste
+# Physical Ctrl+V stays as raw Ctrl+V for vim/tmux (verbatim insert)
+# To distinguish: we bind Ctrl+V to paste ONLY when vi_mode is off
+# Pragmatic: bind Ctrl+V=paste. Use Ctrl+Shift+V for verbatim if needed.
+[[keyboard.bindings]]
+key = "V"
+mods = "Control"
+action = "Paste"
+
+[[keyboard.bindings]]
+key = "C"
+mods = "Control"
+action = "Copy"
