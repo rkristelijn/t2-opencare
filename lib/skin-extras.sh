@@ -256,8 +256,26 @@ with open('$menu_conf', 'w') as f:
       fi
       ;;
     win95)
-      # Similar but with Win95 start button
-      info "Win95 start button: use Chicago95 applet"
+      # Chicago95 start button
+      local start_icon="${HOME}/.themes/Chicago95/misc/GTK2_start_buttons/Start-button_chicago95.png"
+      if [[ -f "$start_icon" ]] && [[ -f "$menu_conf" ]]; then
+        cp "$menu_conf" "${menu_conf}.bak-$(date +%s)"
+        python3 -c "
+import json
+with open('$menu_conf', 'r') as f:
+    conf = json.load(f)
+conf['menu-custom'] = conf.get('menu-custom', {})
+conf['menu-custom']['value'] = True
+conf['menu-icon'] = conf.get('menu-icon', {})
+conf['menu-icon']['value'] = '$start_icon'
+conf['menu-label'] = conf.get('menu-label', {})
+conf['menu-label']['value'] = 'Start'
+with open('$menu_conf', 'w') as f:
+    json.dump(conf, f, indent=2)
+" 2>/dev/null && ok "Start button: Windows 95"
+        # Refresh Cinnamon panel
+        dbus-send --session --dest=org.Cinnamon --type=method_call /org/Cinnamon org.Cinnamon.ReloadTheme 2>/dev/null || true
+      fi
       ;;
   esac
 }
