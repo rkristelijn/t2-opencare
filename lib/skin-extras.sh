@@ -166,6 +166,17 @@ EOF
       chmod +x "${desktop_dir}/my-computer.desktop" \
         "${desktop_dir}/recycle-bin.desktop" \
         "${desktop_dir}/my-documents.desktop"
+      # Mark as trusted so Nemo shows them as clickable icons
+      gio set "${desktop_dir}/my-computer.desktop" metadata::trusted true 2>/dev/null || true
+      gio set "${desktop_dir}/recycle-bin.desktop" metadata::trusted true 2>/dev/null || true
+      gio set "${desktop_dir}/my-documents.desktop" metadata::trusted true 2>/dev/null || true
+      # Refresh nemo-desktop
+      if pgrep -x nemo-desktop &>/dev/null; then
+        nemo-desktop --quit 2>/dev/null
+        sleep 0.5
+        nohup nemo-desktop &>/dev/null &
+        disown
+      fi
       ok "Desktop icons: My Computer, Recycle Bin, My Documents"
       ;;
   esac
@@ -187,7 +198,7 @@ extras_app_overrides() {
   mkdir -p "$override_dir"
 
   case "$skin_id" in
-    winxp | winxp-*)
+    winxp | winxp-* | win95 | win7 | vista | longhorn)
       # Firefox → Internet Explorer icon
       local ie_icon="${CONFIG_DIR}/skins/winxp/ie.png"
       [[ ! -f "$ie_icon" ]] && ie_icon="${HOME}/git/hub/linux-intel-macbook/skins/winxp/ie.png"
