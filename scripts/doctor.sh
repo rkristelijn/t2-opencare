@@ -69,7 +69,7 @@ check_kernel() {
     repair "Install T2 kernel" bash -c 'sudo apt update && sudo apt install -y linux-t2'
   fi
 
-  check "apple-bce module loaded" bash -c 'lsmod | grep -q apple_bce' || {
+  check "apple-bce driver active" bash -c 'lsmod | grep -q apple_bce || grep -q "Apple Internal Keyboard / Trackpad" /proc/bus/input/devices' || {
     repair "Load apple-bce" sudo modprobe apple-bce
   }
 
@@ -186,8 +186,8 @@ check_keyd() {
     repair "Stop and mask xkeysnail" bash -c 'sudo systemctl stop xkeysnail 2>/dev/null; sudo systemctl mask xkeysnail 2>/dev/null; sudo pkill -x xkeysnail 2>/dev/null || true'
   }
 
-  check "kintotray NOT running" bash -c '! pgrep -f kintotray >/dev/null' || {
-    repair "Kill kintotray" bash -c 'pkill -f kintotray'
+  check "kintotray NOT running" bash -c '! pgrep -x kintotray.py >/dev/null && ! pgrep -x kintotray >/dev/null' || {
+    repair "Kill kintotray" bash -c 'pkill -f kintotray.py 2>/dev/null || true'
   }
 
   # ─── No conflicting autostart ─────────────────────────────────
@@ -202,11 +202,15 @@ check_keyd() {
   if [[ -n "${DISPLAY:-}" ]]; then
     local sw
     sw=$(gsettings get org.cinnamon.desktop.keybindings.wm switch-windows 2>/dev/null || echo "")
-    check "Window switch = Alt+Tab (for Cmd+Tab)" bash -c "echo '$sw' | grep -q 'Alt'" || {
+    if echo "$sw" | grep -q "Alt"; then
+      ok "Window switch = Alt+Tab (for Cmd+Tab)"
+    else
+      fail "Window switch not set to Alt+Tab (current: ${sw})"
+      ((ISSUES++))
       repair "Set switch-windows to Alt+Tab" bash -c "
         gsettings set org.cinnamon.desktop.keybindings.wm switch-windows \"['<Alt>Tab']\"
         gsettings set org.cinnamon.desktop.keybindings.wm switch-windows-backward \"['<Alt><Shift>Tab']\""
-    }
+    fi
 
     # Ulauncher hotkey
     local ulauncher_conf="${HOME}/.config/ulauncher/settings.json"
