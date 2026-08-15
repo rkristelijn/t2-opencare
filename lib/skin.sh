@@ -23,6 +23,7 @@ GTK_THEME="$(gsettings get org.cinnamon.desktop.interface gtk-theme 2>/dev/null 
 ICON_THEME="$(gsettings get org.cinnamon.desktop.interface icon-theme 2>/dev/null | tr -d "'")"
 CURSOR_THEME="$(gsettings get org.cinnamon.desktop.interface cursor-theme 2>/dev/null | tr -d "'")"
 BUTTON_LAYOUT="$(gsettings get org.cinnamon.desktop.wm.preferences button-layout 2>/dev/null | tr -d "'")"
+WM_THEME="$(gsettings get org.cinnamon.desktop.wm.preferences theme 2>/dev/null | tr -d "'")"
 WALLPAPER="$(gsettings get org.cinnamon.desktop.background picture-uri 2>/dev/null | tr -d "'")"
 WALLPAPER_MODE="$(gsettings get org.cinnamon.desktop.background picture-options 2>/dev/null | tr -d "'")"
 PANELS="$(gsettings get org.cinnamon panels-enabled 2>/dev/null)"
@@ -46,6 +47,7 @@ _apply_state() {
   gsettings set org.cinnamon.desktop.interface icon-theme "${ICON_THEME:-Mint-Y-Dark}"
   gsettings set org.cinnamon.desktop.interface cursor-theme "${CURSOR_THEME:-DMZ-Black}" 2>/dev/null || true
   gsettings set org.cinnamon.desktop.wm.preferences button-layout "${BUTTON_LAYOUT:-:minimize,maximize,close}"
+  gsettings set org.cinnamon.desktop.wm.preferences theme "${WM_THEME:-${GTK_THEME:-Mint-Y-Dark}}"
   [[ -n "${WALLPAPER:-}" ]] && gsettings set org.cinnamon.desktop.background picture-uri "$WALLPAPER"
   [[ -n "${WALLPAPER_MODE:-}" ]] && gsettings set org.cinnamon.desktop.background picture-options "$WALLPAPER_MODE"
   gsettings set org.cinnamon panels-enabled "${PANELS:-['1:0:bottom']}" 2>/dev/null || true
@@ -166,7 +168,7 @@ skin_set_wallpaper() {
   fi
 }
 
-# Set Cinnamon theme + GTK + icons in one call
+# Set Cinnamon theme + GTK + icons + WM in one call
 skin_set_theme() {
   local cinnamon_theme="${1:-}"
   local gtk_theme="${2:-$cinnamon_theme}"
@@ -174,6 +176,7 @@ skin_set_theme() {
 
   [[ -n "$cinnamon_theme" ]] && gsettings set org.cinnamon.theme name "$cinnamon_theme"
   [[ -n "$gtk_theme" ]] && gsettings set org.cinnamon.desktop.interface gtk-theme "$gtk_theme"
+  [[ -n "$gtk_theme" ]] && gsettings set org.cinnamon.desktop.wm.preferences theme "$gtk_theme"
   [[ -n "$icon_theme" ]] && gsettings set org.cinnamon.desktop.interface icon-theme "$icon_theme"
 }
 
