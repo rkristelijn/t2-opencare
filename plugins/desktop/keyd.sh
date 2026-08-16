@@ -8,6 +8,7 @@
 source "${LIB_DIR}/common.sh"
 
 KEYD_CONF="/etc/keyd/default.conf"
+BCORNE_CONF="/etc/keyd/bcorne.conf"
 KEYD_SERVICE="keyd"
 
 # ═══════════════════════════════════════════════════════════════
@@ -28,6 +29,7 @@ _keyd_config() {
 
 [ids]
 *
+-6401:45d4
 
 [global]
 macro_timeout = 200
@@ -96,13 +98,61 @@ EOF
 }
 
 # ═══════════════════════════════════════════════════════════════
+# BCORNE SPLIT KEYBOARD CONFIG (DH747, VIAL firmware)
+# ═══════════════════════════════════════════════════════════════
+
+_bcorne_config() {
+  cat <<'EOF'
+# /etc/keyd/bcorne.conf
+# DH747 BCORNE split keyboard
+# Managed by: t2-opencare (plugins/desktop/keyd.sh)
+#
+# Fixes:
+#   - Media keys: firmware sends fastforward/rewind instead of nextsong/previoussong
+#   - Mac-like Cmd behavior (same as internal keyboard)
+
+[ids]
+6401:45d4
+
+[main]
+# ─── Fix media keys: BCORNE sends KC_MFFD/KC_MRWD not KC_MNXT/KC_MPRV
+fastforward = nextsong
+rewind = previoussong
+
+# ─── Cmd (Meta) → "smart Ctrl" layer with Mac overrides ───────
+leftmeta = layer(meta_bcorne)
+rightmeta = layer(meta_bcorne)
+
+[meta_bcorne:C]
+
+# ─── Same Mac overrides as default ────────────────────────────
+tab = swapm(alt_tab, A-tab)
+` = swapm(alt_tab, A-S-tab)
+space = M-space
+q = A-f4
+h = M-h
+
+[alt]
+backspace = C-backspace
+delete = C-delete
+left = C-left
+right = C-right
+
+[alt_tab:A]
+tab = A-tab
+` = A-S-tab
+EOF
+}
+
+# ═══════════════════════════════════════════════════════════════
 # PLUGIN CONTRACT
 # ═══════════════════════════════════════════════════════════════
 
 plugin_check() {
   is_installed keyd &&
     systemctl is-active --quiet "$KEYD_SERVICE" 2>/dev/null &&
-    grep -q "meta_mac:C" "$KEYD_CONF" 2>/dev/null
+    grep -q "meta_mac:C" "$KEYD_CONF" 2>/dev/null &&
+    grep -q "fastforward = nextsong" "$BCORNE_CONF" 2>/dev/null
 }
 
 plugin_install() {
@@ -158,6 +208,12 @@ plugin_verify() {
   # Config has meta_mac layer (not dumb swap)
   if ! grep -q "meta_mac:C" "$KEYD_CONF" 2>/dev/null; then
     fail "keyd config missing meta_mac:C layer"
+    ((errors++))
+  fi
+
+  # BCORNE config exists with media key fix
+  if ! grep -q "fastforward = nextsong" "$BCORNE_CONF" 2>/dev/null; then
+    fail "BCORNE config missing media key remap (${BCORNE_CONF})"
     ((errors++))
   fi
 
@@ -227,6 +283,11 @@ _write_config() {
   else
     warn "Config validation failed — check: sudo journalctl -eu keyd"
   fi
+
+  # BCORNE split keyboard config
+  step "Writing BCORNE keyboard config..."
+  _bcorne_config | sudo tee "$BCORNE_CONF" >/dev/null
+  ok "BCORNE config: ${BCORNE_CONF}"
 }
 
 _set_cinnamon_bindings() {
