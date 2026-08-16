@@ -151,6 +151,17 @@ _apply_defaults() {
   gsettings set org.cinnamon.desktop.interface cursor-theme "DMZ-Black" 2>/dev/null || true
   gsettings set org.cinnamon.desktop.wm.preferences button-layout ":minimize,maximize,close"
   gsettings set org.cinnamon panels-enabled "['1:0:bottom']" 2>/dev/null || true
+
+  # Set a random default Mint wallpaper to force theme repaint
+  local wallpaper_dir="/usr/share/backgrounds/linuxmint"
+  if [[ -d "$wallpaper_dir" ]]; then
+    local wp
+    wp=$(find "$wallpaper_dir" -type f \( -name "*.jpg" -o -name "*.png" \) 2>/dev/null | shuf -n1)
+    if [[ -n "$wp" ]]; then
+      gsettings set org.cinnamon.desktop.background picture-uri "file://${wp}"
+      gsettings set org.cinnamon.desktop.background picture-options "zoom"
+    fi
+  fi
 }
 
 # ═══════════════════════════════════════════════════════════════
